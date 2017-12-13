@@ -1,0 +1,13 @@
+{
+  "name": "node-mysql",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "^4.10.6",
+    "mysql": "^2.5.4"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-execute": "^0.2.2"
+  }
+}

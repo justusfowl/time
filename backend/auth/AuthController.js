@@ -19,10 +19,22 @@ router.use(bodyParser.json());
 router.post('/login', function(req, res) { 
 
     console.log("login triggered");
-    console.log("login of: " + req.body.user_id);
+    console.log("login of: " + req.body.username);
 
-  var user = req.body.user_id;
+  var user = req.body.username;
   var pw = req.body.password;
+
+  console.log(req.body.username);
+  console.log(req.body);
+
+
+
+  if (typeof(user) == "undefined" || typeof(pw) == "undefined" ){
+    res.status(403).send({ auth: false, token: null });
+    return 
+  } 
+  
+  /*
   var ad = new ActiveDirectory({ url: config.AD.url , baseDN: config.AD.baseDN, username : user, password: pw});
 
 
@@ -81,6 +93,7 @@ router.post('/login', function(req, res) {
         if (data.auth){
           res.status(200).send({ auth: true, token: token });
         }else{
+          // res.redirect('/login');
           res.status(403).send({ auth: false, token: null });
         }
 
@@ -90,6 +103,7 @@ router.post('/login', function(req, res) {
   
   authenticate().then(isInUserGroup).then(isInAdminGroup).then(returnResAndToken)       
 
+*/
 });
 
 router.get('/logout', function(req, res) {

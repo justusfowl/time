@@ -16,7 +16,11 @@ var mysqlInstance = function(){
 mysqlInstance.prototype.addActualTime = function (req, cb) {
 
     var time = req.query.time;
-    var sql = "INSERT INTO `time`.`tblactualtime` (`actualtime`,`userid`,`directionid`,`requestid`)VALUES("+time+",99,1,Null);";
+
+    var sql = "INSERT INTO `time`.`tblactualtime`\
+    (`actualtime`,`userid`,`directionid`,`requestid`)\
+    VALUES("+time+",99,1,Null);";
+
     console.log("addActualTime")
     console.log(sql);
 

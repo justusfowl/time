@@ -21,24 +21,17 @@ app.use('/api/auth', AuthController);
 var timeAPI = require(__root + 'v01/time');
 app.use('/api/time', timeAPI);
 
+
+app.use(function(req, res, next) {
+  //res.setHeader('Access-Control-Allow-Origin', '*');
+  //res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+  //res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  
+  next();
+});
+
+
 module.exports = app;
 
-
-
-
-
-
-/*
-var con = mysql.createConnection({
-  host: config.database.host,
-  user: config.database.username,
-  password: config.database.password
-});
-
-
-con.connect(function(err) {
-  if (err) throw err;  
-  
-  console.log("Blupp Connected!");
-});
-*/

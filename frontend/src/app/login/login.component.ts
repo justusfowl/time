@@ -30,17 +30,9 @@ export class LoginComponent implements OnInit {
                 'password': ['', Validators.required]
               });
 
-            console.log(this.userForm);
 
          }
         //private alertService: AlertService
-    
-    saveUser() {
-        if (this.userForm.dirty && this.userForm.valid) {
-            alert(`Name: ${this.userForm.value.username} Email: ${this.userForm.value.password}`);
-        }
-        }
-
 
     ngOnInit() {
         // reset login status
@@ -51,22 +43,21 @@ export class LoginComponent implements OnInit {
     }
 
     login() {
-        if (this.userForm.dirty && this.userForm.valid) {
-            alert(`Name: ${this.userForm.value.username} Email: ${this.userForm.value.password}`);
-        }
-        
+
         this.loading = true;
         this.authenticationService.login(this.userForm.value.username, this.userForm.value.password)
+           
             .subscribe(
                 data => {
-                    this.router.navigate([this.returnUrl]);
-                    console.log("LOGIN DATA")
+                    //this.router.navigate([this.returnUrl]);
+                    console.log(data);
+                    console.log("LOGIN DATA");
                 },
                 error => {
                     //this.alertService.error(error);
                     this.loading = false;
+                    console.log(error);
                     console.log("LOGIN ERROR")
                 });
-                
     }
 }

@@ -3,11 +3,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './account.component.html',
+  templateUrl: './record.component.html',
   styleUrls: ['../app.component.css']
 })
 
-export class AccountComponent implements OnInit{
+export class RecordComponent implements OnInit{
 
   constructor(private router: Router, private route: ActivatedRoute){
 

@@ -3,11 +3,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './account.component.html',
-  styleUrls: ['../app.component.css']
+  templateUrl: './calendar.component.html',
+  //styleUrls: ['../map.component.css']
 })
 
-export class AccountComponent implements OnInit{
+export class CalendarComponent implements OnInit{
 
   constructor(private router: Router, private route: ActivatedRoute){
 

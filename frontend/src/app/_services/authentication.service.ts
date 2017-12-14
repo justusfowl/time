@@ -15,14 +15,18 @@ export class AuthenticationService {
 
         let headers = new Headers({ 'Content-Type': 'application/x-www-form-urlencoded'});
         let options = new RequestOptions({ headers: headers });
-
+        
+        console.log("login in auth service")
+        
         return this.http.post('http://localhost:3000/api/auth/login', body.toString(), options)
             .map((response: Response) => {
                 // login successful if there's a jwt token in the response
                 let user = response.json();
+                console.log(user);
                 if (user && user.token) {
                     // store user details and jwt token in local storage to keep user logged in between page refreshes
-                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    localStorage.setItem('currentUserToken', user.token);
+
                 }
             });
             
@@ -30,7 +34,7 @@ export class AuthenticationService {
 
     logout() {
         // remove user from local storage to log user out
-        localStorage.removeItem('currentUser');
+        localStorage.removeItem('currentUserToken');
     }
     
 }

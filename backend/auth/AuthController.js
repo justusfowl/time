@@ -17,25 +17,30 @@ router.use(bodyParser.json());
 
 
 router.post('/login', function(req, res) { 
+  
+  // allow CORS for dev
 
-    console.log("login triggered");
-    console.log("login of: " + req.body.username);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader("Access-Control-Allow-Headers", 'Origin, X-Requested-With, Content-Type, Accept');
+
+  console.log("login triggered");
+  console.log("login of: " + req.body.username);
 
   var user = req.body.username;
   var pw = req.body.password;
 
-  console.log(req.body.username);
-  console.log(req.body);
-
-
-
   if (typeof(user) == "undefined" || typeof(pw) == "undefined" ){
-    res.status(403).send({ auth: false, token: null });
+    res.status(401).send({ auth: false, token: null });
     return 
   } 
   
-  /*
-  var ad = new ActiveDirectory({ url: config.AD.url , baseDN: config.AD.baseDN, username : user, password: pw});
+  try{
+    var ad = new ActiveDirectory({ url: config.AD.url , baseDN: config.AD.baseDN, username : user, password: pw});
+  }
+  catch(err){
+    res.status(401).send({ auth: false, token: null });
+    return 
+  }
 
 
   var authenticate = function() {
@@ -43,17 +48,21 @@ router.post('/login', function(req, res) {
         ad.authenticate(user, pw, function(err, auth) {
             if (auth) {
               console.log('Authenticated!');
+              resolve({"auth": auth, "user": user});
             }
             else {
               console.log('Authentication failed!');
+              res.status(401).send({ auth: false, token: null });
+              return 
             }
-            resolve({"auth": auth, "user": user});
+            
           }); 
       });
       return promise;
   };
 
   var isInUserGroup = function(data) {
+
     var promise = new Promise(function(resolve, reject){
       ad.isUserMemberOf(user, config.AD.usergroup, function(err, isMember) {
         if (err) {
@@ -68,6 +77,7 @@ router.post('/login', function(req, res) {
   };
 
   var isInAdminGroup = function(data) {
+
     var promise = new Promise(function(resolve, reject){
       ad.isUserMemberOf(user, config.AD.admingroup, function(err, isMember) {
         if (err) {
@@ -82,7 +92,7 @@ router.post('/login', function(req, res) {
   };
 
   var returnResAndToken = function(data) {
-    
+     
      var promise = new Promise(function(resolve, reject){
         // if auth = true
         var token = jwt.sign(data, config.secret, {
@@ -94,7 +104,7 @@ router.post('/login', function(req, res) {
           res.status(200).send({ auth: true, token: token });
         }else{
           // res.redirect('/login');
-          res.status(403).send({ auth: false, token: null });
+          res.status(401).send({ auth: false, token: null });
         }
 
        });
@@ -103,7 +113,6 @@ router.post('/login', function(req, res) {
   
   authenticate().then(isInUserGroup).then(isInAdminGroup).then(returnResAndToken)       
 
-*/
 });
 
 router.get('/logout', function(req, res) {

@@ -7,17 +7,25 @@ import { HttpModule } from '@angular/http';
 import { AppComponent }            from './app.component';
 
 import { LoginComponent  }   from './login/index';
+import { RecordComponent }   from './record/record.component';
+import { RequestComponent }   from './request/request.component';
 import { AccountComponent }   from './account/account.component';
+import { CalendarComponent }   from './calendar/calendar.component';
 import { PageNotFoundComponent }   from './notfound/notfound.component';
 
 import { AuthenticationService } from './_services/index';
 
 import { AuthGuard } from './_guards/index';
 
+
 const appRoutes: Routes = [
-  { path: '', component: AccountComponent, canActivate: [AuthGuard]},
+  { path: '', component: RecordComponent, canActivate: [AuthGuard]},
+  { path: 'record', component: RecordComponent},
+  { path: 'request', component: RequestComponent},
+  { path: 'calendar', component: CalendarComponent},
   { path: 'login', component: LoginComponent},
-  { path: 'account', component: AccountComponent },
+  { path: 'account', component: AccountComponent},
+
   { path: '**', component: PageNotFoundComponent}
 ];
 
@@ -31,8 +39,13 @@ const appRoutes: Routes = [
   ],
   declarations: [
     AppComponent,
+    RecordComponent,
+    RequestComponent,
+    CalendarComponent,
+
     LoginComponent,
     AccountComponent,
+
     PageNotFoundComponent
   ],
   providers: [

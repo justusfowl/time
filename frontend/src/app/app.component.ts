@@ -15,6 +15,9 @@ export class AppComponent implements OnInit{
 
   ngOnInit(){
       console.log("init")
-    
+      $(".nav a").on("click", function(){
+        $(".nav").find(".active").removeClass("active");
+        $(this).parent().addClass("active");
+     });
   }
 }

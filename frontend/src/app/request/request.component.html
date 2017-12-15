@@ -2,30 +2,100 @@
 
 <div class="container"><h1>Erfassen und Berabeiten von Anträgen</h1></div>
 <div id="exTab1" class="container">	
-        <ul  class="nav nav-pills">
-			<li class="active">
-                <a  href="#1a" data-toggle="tab">Hausbesuch</a>
-			</li>
-			<li>
-                <a href="#2a" data-toggle="tab">Zeitnachtrag</a>
-			</li>
-			<li>
-                <a href="#3a" data-toggle="tab">Urlaub</a>
-			</li>
-		</ul>
-			<div class="tab-content clearfix">
-                <div class="tab-pane active" id="1a">
-                    <h3>Content's for Hausbesuch</h3>
-                </div>
+    <ul  class="nav nav-pills">
+        <li class="active">
+            <a  href="#1a" data-toggle="tab">Hausbesuch</a>
+        </li>
+        <li>
+            <a href="#2a" data-toggle="tab">Zeitnachtrag</a>
+        </li>
+        <li>
+            <a href="#3a" data-toggle="tab">Urlaub</a>
+        </li>
+    </ul>
+        <div class="tab-content clearfix">
+            <div class="tab-pane active" id="1a">
+                <form [formGroup]="formHomeVisit" novalidate>
+                    <div class="row">
+                        <div class="col-md-4 accSubtitle">
+                            <my-date-picker name="mydate" [options]="myDatePickerOptions"
+                                formControlName="myDate">
+                            </my-date-picker>
+                        </div>
+                        <div class="col-md-1 accSubtitle">
+                                von:
+                        </div>
+                        <div class="col-md-1">
+                            <input style="height: 34px; " id="timeFromHomeVisit" type="time">
+                        </div>
+                        <div class="col-md-1 accSubtitle">
+                            bis:
+                        </div>
+                        <div class="col-md-1">
+                            <input style="height: 34px; " id="timeToHomeVisit" type="time">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-primary btn-block">Eintragen</button>
+                        </div>
+                        
+                    </div>
+                </form>
+            </div>
+            <div class="tab-pane" id="2a">
+                <form [formGroup]="formAddEntry" novalidate>
+                        <div class="row">                                
+                            <div class="col-md-4 accSubtitle">
+                                <my-date-picker name="mydate" [options]="myDatePickerOptions"
+                                    formControlName="myDate">
+                                </my-date-picker>
+                            </div>
+                            <div class="col-md-1 accSubtitle">
+                                    um:
+                            </div>
+                            <div class="col-md-1">
+                                    <input style="height: 34px; " id="timeAddEntry" type="time">
+                            </div>
+                            <div class="col-md-3 accSubtitle">
+                                <div class="btn-group recordBtnGroup" role="group" aria-label="Large button group">
+                                    <button type="button" class="btn btn-secondary active recordBtn" data-val=1 (click)="recordBtnClick()">Kommen</button>
+                                    <button type="button" class="btn btn-secondary recordBtn" data-val=2 (click)="recordBtnClick()">Gehen</button>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-primary btn-block">Eintragen</button>
+                            </div>                     
+                        </div>
+                    </form>
+            </div>
+            <div class="tab-pane" id="3a">
                 <div class="tab-pane" id="2a">
-                    <h3>Zeitnachtrag</h3>
+                    <form [formGroup]="formVacation" novalidate>
+                            <div class="row">
+                                <div class="col-md-1 accSubtitle">
+                                    von:
+                                </div>
+                                <div class="col-md-4 accSubtitle">
+                                    <my-date-picker name="mydate" [options]="myDatePickerOptions"
+                                        formControlName="myDate">
+                                    </my-date-picker>
+                                </div>
+                                <div class="col-md-1 accSubtitle">
+                                    bis:
+                                </div>
+                                <div class="col-md-4 accSubtitle">
+                                    <my-date-picker name="mydate" [options]="myDatePickerOptions"
+                                        formControlName="myDate">
+                                    </my-date-picker>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-primary btn-block">Eintragen</button>
+                                </div>                     
+                            </div>
+                        </form>
                 </div>
-                <div class="tab-pane" id="3a">
-                    <h3>Urlaub</h3>
-                </div>
-			</div>
+            </div>
+        </div>
 </div>
-
 
 <div class="container primeContent">
         <div class="panel-group" id="accordion">

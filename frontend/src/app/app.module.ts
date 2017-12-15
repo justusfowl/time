@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule  }    from '@angular/forms';
 import { HttpModule } from '@angular/http';
+import { MyDatePickerModule } from 'mydatepicker';
 
 import { AppComponent }            from './app.component';
 
@@ -13,7 +14,7 @@ import { AccountComponent }   from './account/account.component';
 import { CalendarComponent }   from './calendar/calendar.component';
 import { PageNotFoundComponent }   from './notfound/notfound.component';
 
-import { AuthenticationService } from './_services/index';
+import { AuthenticationService, DataHandlingService } from './_services/index';
 
 import { AuthGuard } from './_guards/index';
 
@@ -35,7 +36,8 @@ const appRoutes: Routes = [
     RouterModule.forRoot(appRoutes,{useHash:true}), 
     HttpModule, 
     FormsModule, 
-    ReactiveFormsModule 
+    ReactiveFormsModule,
+    MyDatePickerModule
   ],
   declarations: [
     AppComponent,
@@ -50,7 +52,8 @@ const appRoutes: Routes = [
   ],
   providers: [
     AuthGuard,
-    AuthenticationService
+    AuthenticationService, 
+    DataHandlingService
   ],
   
   bootstrap: [AppComponent]

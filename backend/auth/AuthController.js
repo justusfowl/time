@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var bodyParser = require('body-parser');
-
+var mysqlInstance = require('../db');
 var VerifyToken = require('./VerifyToken');
 
 var ActiveDirectory = require('activedirectory');
@@ -10,19 +10,16 @@ var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var bcrypt = require('bcryptjs');
 var config = require('../config'); // get config file
 
-
-
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
-
 
 router.post('/login', function(req, res) { 
   
   // allow CORS for dev
-
+/*
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader("Access-Control-Allow-Headers", 'Origin, X-Requested-With, Content-Type, Accept');
-
+*/
   console.log("login triggered");
   console.log("login of: " + req.body.username);
 
@@ -42,13 +39,12 @@ router.post('/login', function(req, res) {
     return 
   }
 
-
   var authenticate = function() {
       var promise = new Promise(function(resolve, reject){
         ad.authenticate(user, pw, function(err, auth) {
             if (auth) {
               console.log('Authenticated!');
-              resolve({"auth": auth, "user": user});
+              resolve({"auth": auth, "username": user});
             }
             else {
               console.log('Authentication failed!');
@@ -91,6 +87,27 @@ router.post('/login', function(req, res) {
     return promise;
   };
 
+  var getUserId = function(data) {
+    var db = new mysqlInstance();
+        var promise = new Promise(function(resolve, reject){
+
+          var cb = function (err, result) {
+            if (err) {
+                console.log(err);
+            }else{
+                var userid = result[0].userid;
+                data.userid = userid; 
+            }
+            db.con.end();
+            resolve(data);
+            };
+
+        db.getUserId(user,cb);
+
+        });
+        return promise;
+      };
+
   var returnResAndToken = function(data) {
      
      var promise = new Promise(function(resolve, reject){
@@ -101,7 +118,8 @@ router.post('/login', function(req, res) {
 
         // return the information including token as JSON
         if (data.auth){
-          res.status(200).send({ auth: true, token: token });
+          data.token = token; 
+          res.status(200).send(data);
         }else{
           // res.redirect('/login');
           res.status(401).send({ auth: false, token: null });
@@ -111,7 +129,7 @@ router.post('/login', function(req, res) {
      return promise;
   };
   
-  authenticate().then(isInUserGroup).then(isInAdminGroup).then(returnResAndToken)       
+  authenticate().then(isInUserGroup).then(isInAdminGroup).then(getUserId).then(returnResAndToken)       
 
 });
 

@@ -5,7 +5,11 @@ import 'rxjs/add/operator/map'
 
 @Injectable()
 export class AuthenticationService {
-    constructor(private http: Http) { }
+    constructor(
+        private http: Http
+    ) { }
+
+    public username : any
     
     login(username: string, password: string) {
 
@@ -26,15 +30,17 @@ export class AuthenticationService {
                 if (user && user.token) {
                     // store user details and jwt token in local storage to keep user logged in between page refreshes
                     localStorage.setItem('currentUserToken', user.token);
-
+                    localStorage.setItem('currentUserName', user.username);
+                    localStorage.setItem('currentUserId', user.userid);
                 }
             });
-            
     }
 
     logout() {
         // remove user from local storage to log user out
         localStorage.removeItem('currentUserToken');
+        localStorage.removeItem('currentUserName');
+        localStorage.removeItem('currentUserId');
     }
     
 }

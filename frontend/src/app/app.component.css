@@ -4,7 +4,7 @@ html, body {
   }
   
 .footer {
-    position: absolute;
+    position: relative;
     bottom:20px;
     clear:both;
     padding-top:20px;
@@ -17,6 +17,10 @@ html, body {
 .recordBtn{
   width: 50% !important; 
   padding-top: 10px; 
+}
+
+.recordBtn.active{
+  background-color: #84c6ff;
 }
 
 .primeContent{
@@ -40,4 +44,8 @@ html, body {
   color: #b9b9b929; 
   text-align: right;
   padding-bottom: 20px; 
+}
+
+.tab-content{
+  padding-top: 15px; 
 }

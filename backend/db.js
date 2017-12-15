@@ -15,11 +15,16 @@ var mysqlInstance = function(){
 
 mysqlInstance.prototype.addActualTime = function (req, cb) {
 
-    var time = req.query.time;
+    var userid = req.body.userid;
+    var time = req.body.time;
+    var directionid = req.body.directionid;
+
+    console.log("this is the time requested: ")
+    console.log(time);
 
     var sql = "INSERT INTO `time`.`tblactualtime`\
     (`actualtime`,`userid`,`directionid`,`requestid`)\
-    VALUES("+time+",99,1,Null);";
+    VALUES('"+time+"',"+userid+","+directionid+",Null);";
 
     console.log("addActualTime")
     console.log(sql);
@@ -27,6 +32,18 @@ mysqlInstance.prototype.addActualTime = function (req, cb) {
     this.con.query(sql, cb );
 
 }
+
+mysqlInstance.prototype.getUserId = function (username, cb ) {
+        
+        var sql = "SELECT userid FROM time.tblusers\
+        where username = '"+ username + "';";
+    
+        console.log("getUserId of user: " + username)
+        console.log(sql);
+    
+        this.con.query(sql, cb );
+    
+    }
 
 
 module.exports = mysqlInstance;

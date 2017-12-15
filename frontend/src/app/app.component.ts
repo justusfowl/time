@@ -19,5 +19,7 @@ export class AppComponent implements OnInit{
         $(".nav").find(".active").removeClass("active");
         $(this).parent().addClass("active");
      });
+
+
   }
 }

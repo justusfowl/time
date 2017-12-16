@@ -9,7 +9,7 @@ export class DataHandlingService {
 
     APIUrl = "http://localhost:3000/api/v01/";
     
-    addActualTime(userid : number, time: string, directionid : number) {
+    addActualTime(userid: Number, time: Date, directionid: Number) {
 
         let body = {"userid" : userid, "time": time, "directionid" : directionid }
 

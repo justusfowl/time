@@ -55,9 +55,9 @@ export class RecordComponent implements OnInit{
     let userId = localStorage.getItem("currentUserId");  // @TODO: localStorage.getItem("currentUserId")
     let currDir = this.recordDir; 
     let currTime = this.currTime; 
-    console.log("ich bin hier")
-
-    this.dataHandlingService.addActualTime(parseInt(userId), currTime, parseInt(currDir)).subscribe(
+    console.log("ich bin hier");
+    
+    this.dataHandlingService.addActualTime(parseInt(userId), currTime, currDir).subscribe(
       data => {
           //this.router.navigate([this.returnUrl]);
           console.log(data);
@@ -68,6 +68,7 @@ export class RecordComponent implements OnInit{
           console.log(error);
           console.log("error")
       });
+      
   }
 
 }

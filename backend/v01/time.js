@@ -23,6 +23,7 @@ router.post('/addActualTime', VerifyToken, function(req, res, next) {
     db.addActualTime(req,cb);
       
 });
-    
+
+console.log("test");
     
 module.exports = router;

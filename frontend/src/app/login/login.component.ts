@@ -43,13 +43,12 @@ export class LoginComponent implements OnInit {
     }
 
     login() {
-
         this.loading = true;
         this.authenticationService.login(this.userForm.value.username, this.userForm.value.password)
            
             .subscribe(
                 data => {
-                    //this.router.navigate([this.returnUrl]);
+                    this.router.navigate(["/record"]);
                     console.log(data);
                     console.log("LOGIN DATA");
                 },

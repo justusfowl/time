@@ -14,9 +14,11 @@ import { AccountComponent }   from './account/account.component';
 import { CalendarComponent }   from './calendar/calendar.component';
 import { PageNotFoundComponent }   from './notfound/notfound.component';
 
-import { AuthenticationService, DataHandlingService } from './_services/index';
+import { AuthenticationService, DataHandlingService, FormatterService, UtilService } from './_services/index';
 
 import { AuthGuard } from './_guards/index';
+
+//import {enableProdMode} from '@angular/core';
 
 
 const appRoutes: Routes = [
@@ -29,6 +31,8 @@ const appRoutes: Routes = [
 
   { path: '**', component: PageNotFoundComponent}
 ];
+
+//enableProdMode();
 
 @NgModule({
   imports: [
@@ -53,10 +57,14 @@ const appRoutes: Routes = [
   providers: [
     AuthGuard,
     AuthenticationService, 
-    DataHandlingService
+    DataHandlingService, 
+    FormatterService, 
+    UtilService
   ],
   
   bootstrap: [AppComponent]
 })
+
+
 
 export class AppModule {};

@@ -10,6 +10,14 @@ export class AuthenticationService {
     ) { }
 
     public username : any
+
+    getUsername(){
+        return localStorage.getItem('currentUserName');
+    }
+
+    getUserId(){
+        return localStorage.getItem('currentUserId');
+    }
     
     login(username: string, password: string) {
 
@@ -31,7 +39,10 @@ export class AuthenticationService {
                     // store user details and jwt token in local storage to keep user logged in between page refreshes
                     localStorage.setItem('currentUserToken', user.token);
                     localStorage.setItem('currentUserName', user.username);
-                    localStorage.setItem('currentUserId', user.userid);
+
+                    // FOR DEV PURPOSES SET USER ID 
+                    //localStorage.setItem('currentUserId', user.userid);
+                    localStorage.setItem('currentUserId', 6);
                 }
             });
     }

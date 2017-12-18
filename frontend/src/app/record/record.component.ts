@@ -2,7 +2,7 @@ import { Component, OnInit  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 
-import { DataHandlingService } from '../_services/index';
+import { AuthenticationService,  DataHandlingService, FormatterService } from '../_services/index';
 
 @Component({
   selector: 'app-root',
@@ -14,16 +14,19 @@ export class RecordComponent implements OnInit{
 
   constructor(
     private router: Router, 
-    private route: ActivatedRoute, 
-    private dataHandlingService : DataHandlingService
+    private route: ActivatedRoute,
+    private authService: AuthenticationService,
+    private dataHandlingService : DataHandlingService, 
+    private formatter : FormatterService
   
   ){
    
   }
 
   currTime : any
-  recordDir : Number
-
+  recordDir = 1;
+  timePairs : any;
+  topEntries = 2; 
   
 
   ngOnInit(){
@@ -31,9 +34,11 @@ export class RecordComponent implements OnInit{
     $(".recordBtn").on("click", function(){
       $(".recordBtnGroup").find(".active").removeClass("active");
       $(this).addClass("active");
-   });
+    });
 
    this.currTime = new Date();
+
+   this.getPairBookings();
 
   }
 
@@ -41,8 +46,7 @@ export class RecordComponent implements OnInit{
     let clickedDir = event.target.dataset.val; 
     console.log(clickedDir)
     this.recordDir = clickedDir; 
-    console.log(localStorage.getItem("currentUserName"))
-
+    console.log(this.authService.getUsername())
     
     
   }
@@ -51,24 +55,51 @@ export class RecordComponent implements OnInit{
   }
 
   addActualTime(){
-    let username = localStorage.getItem("currentUserName"); 
-    let userId = localStorage.getItem("currentUserId");  // @TODO: localStorage.getItem("currentUserId")
+    let userId = this.authService.getUserId();
     let currDir = this.recordDir; 
     let currTime = this.currTime; 
-    console.log("ich bin hier");
     
     this.dataHandlingService.addActualTime(parseInt(userId), currTime, currDir).subscribe(
       data => {
           //this.router.navigate([this.returnUrl]);
-          console.log(data);
           console.log("success");
       },
       error => {
           //this.alertService.error(error);
           console.log(error);
-          console.log("error")
       });
       
+  }
+
+  getPairBookings(){
+    var userId = this.authService.getUserId(); 
+    let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", "top": this.topEntries};
+
+    this.dataHandlingService.getTimePairs(params).subscribe(
+      data => {
+          //this.router.navigate([this.returnUrl]);
+          this.timePairs = data
+      },
+      error => {
+          //this.alertService.error(error);
+          console.log(error);
+      });
+
+  }
+
+  handlePaginagingClick(){
+    this.topEntries = this.topEntries + 2;
+    this.getPairBookings();
+  }
+
+  identifyMissingMatch(row){
+    if (typeof(row.cometime) == "undefined" || typeof(row.gotime) == "undefined"){
+      //return false; 
+      return "×";
+    }else{
+      //return true;
+      return "✔";
+    }
   }
 
 }

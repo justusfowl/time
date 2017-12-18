@@ -1,27 +1,35 @@
 <div class="pageHeader">Arbeitszeitkonto</div>
 
 <div class="row">
-    <div class="col-md-4 accKeyFigure">
-        144
+    <div class="col-md-3 accKeyFigure">
+        {{vacHoursRemaining}}
     </div>
-    <div class="col-md-4 accKeyFigure">
-        23.32
+    <div class="col-md-3 accKeyFigure">
+            {{formatter.formatNumberDecimals(balance[0].hrsWorked,2)}}
     </div>
-    <div class="col-md-4 accKeyFigure">
-        23
+    <div class="col-md-3 accKeyFigure">
+            {{formatter.formatNumberDecimals(balance[0].timehrspermonth,2)}}
+    </div>
+    <div class="col-md-3 accKeyFigure">
+            {{calculateTotalBalance()}}
     </div>
 </div>
 <div class="row">
-    <div class="col-md-4 accSubtitle">
+    <div class="col-md-3 accSubtitle">
         Resturlaub in Stunden
     </div>
-    <div class="col-md-4 accSubtitle">
+    <div class="col-md-3 accSubtitle">
         geleistete Arbeitsstunden im aktuellen Monat
     </div>
-    <div class="col-md-4 accSubtitle">
+    <div class="col-md-3 accSubtitle">
         Planarbeitsstunden aktueller Monat
     </div>
+    <div class="col-md-3 accSubtitle">
+        Balance ({{getYtdDisplay()}})
+    </div>
 </div>
+
+<button type="button" class="btn btn-secondary recordBtn" data-val=2 (click)="getVacationInfo()">Gehen</button>
 
 <div class="container primeContent">
     <div class="panel-group" id="accordion">
@@ -29,10 +37,9 @@
             <div class="panel-heading">
                  <h4 class="panel-title">
             <a data-toggle="collapse" data-target="#collapseOne">
-               <i class="fa fa-bath" aria-hidden="true"></i>
+               <i class="fa fa-balance-scale" aria-hidden="true"></i>
                Saldenübersicht
             </a>
-            
           </h4>
     
         </div>
@@ -40,20 +47,28 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Tag</th>
-                        <th scope="col">Kommen</th>
-                        <th scope="col">Gehen</th>
-                        <th scope="col">Arbeitszeit</th>
+                            <th scope="col">Monat</th>
+                            <th scope="col">Arbeitszeit</th>
+                            <th scope="col">Zusatzzeit</th>
+                            <th scope="col">Sollzeit</th>
+                            <th scope="col">Kontostand</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                        <td>@mdo</td>
+                        <ng-container *ngFor="let row of balance; let i=index">
+                            <tr *ngIf="i<topEntries">
+                                <th scope="row">{{formatter.formatRefMonth(row.refmonth)}}</th>
+                                <td>{{formatter.formatNumberDecimals(row.hrsWorked,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.auxHrs,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.timehrspermonth,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.balance,2)}}</td>
+                            </tr>
+                        </ng-container>
+                        <tr (click)="handlePaginagingClick()">
+                            <th colspan="4"></th>
+                            <td>
+                                Mehr...
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -65,7 +80,7 @@
                 <h4 class="panel-title">
         <a data-toggle="collapse" data-target="#collapseTwo" 
             class="collapsed">
-            <i class="fa fa-bath" aria-hidden="true"></i>
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
             Tagesgebaue Buchungsübersicht in Stunden
         </a>
         </h4>

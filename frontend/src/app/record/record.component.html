@@ -11,23 +11,42 @@
             <button type="button" class="btn btn-primary btn-lg btn-block" (click)="recordBtnClick($event)">Eintragen</button>
     </div>
     <div class="col-md-8">
-        <table class="table table-hover">
+        <table id="timePairsTbl" class="table table-hover">
             <thead>
                 <tr>
                 <th scope="col">#</th>
                 <th scope="col">Tag</th>
                 <th scope="col">Kommen</th>
                 <th scope="col">Gehen</th>
-                <th scope="col">Arbeitszeit</th>
+                <th scope="col">Arbeitszeit</th> 
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                <th scope="row">1</th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
-                <td>@mdo</td>
+                <tr *ngFor="let row of timePairs;">
+                    <th scope="row">{{identifyMissingMatch(row)}} </th>
+                    <td>{{formatter.formatDateDayMonth(row.refdate)}}
+                            <p class="subfigure">
+                                    {{formatter.formatDateYear(row.refdate)}}
+                            </p></td>
+                    <td>
+                        {{row.cometime}}
+                        <p class="subfigure">
+                            {{row.cometimeid}}
+                        </p>
+                    </td>
+                    <td>
+                        {{row.gotime}}
+                        <p class="subfigure">
+                            {{row.gotimeid}}
+                        </p>
+                    </td>
+                    <td>{{formatter.formatNumberDecimals(row.difference,2)}}</td>
+                </tr>
+                <tr (click)="handlePaginagingClick()">
+                    <th colspan="4"></th>
+                    <td>
+                        Mehr...
+                    </td>
                 </tr>
             </tbody>
         </table>

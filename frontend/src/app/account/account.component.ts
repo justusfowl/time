@@ -1,6 +1,6 @@
 import { Component, OnInit  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-
+import {IMyDpOptions} from 'mydatepicker';
 import { AuthenticationService,  DataHandlingService, FormatterService, UtilService } from '../_services/index';
 
 
@@ -11,6 +11,15 @@ import { AuthenticationService,  DataHandlingService, FormatterService, UtilServ
 })
 
 export class AccountComponent implements OnInit{
+
+  public myDatePickerOptions: IMyDpOptions = {
+    firstDayOfWeek: 'mo',
+    dateFormat: 'yyyymmdd',
+  };
+
+  // Initialized to specific date (09.10.2018).
+  public refDateFrom: any;
+  public refDateTo: any;
 
   constructor(
     private router: Router, 
@@ -27,12 +36,26 @@ export class AccountComponent implements OnInit{
   balance : any; 
   topEntries = 10; 
   vacHoursRemaining = 0; 
+  filteredDayBookings : any;
+  allDayBookings: any; 
+  dayBookingsRefDateFrom: Number;
+  dayBookingsRefDateTo: Number;
 
   ngOnInit(){
 
+    var today = new Date();
+    var todayAMonthAgo = new Date(today - 30*24*60*60*1000); 
+    
+    this.refDateFrom = { date: { year: todayAMonthAgo.getFullYear(), month: todayAMonthAgo.getUTCMonth()+1, day: todayAMonthAgo.getDate() } };
+    this.refDateTo = { date: { year: today.getFullYear(), month: today.getUTCMonth()+1, day: today.getDate() } };
+
+    this.dayBookingsRefDateFrom = parseFloat(todayAMonthAgo.getFullYear().toString() + (todayAMonthAgo.getUTCMonth()+1).toString() + todayAMonthAgo.getDate().toString()) ;
+    this.dayBookingsRefDateTo = parseFloat(today.getFullYear().toString() + (today.getUTCMonth()+1).toString() + today.getDate().toString()) ;
+    
     this.getAccountBalance();
     this.getVacationInfo();
-  
+    this.getSingleBookings();
+
   }
 
   getPairBookings(){
@@ -80,6 +103,22 @@ export class AccountComponent implements OnInit{
       });
   }
 
+  getSingleBookings(){
+
+    var userId = this.authService.getUserId(); 
+    let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC" };
+
+    this.dataHandlingService.getSingleBookings(params).subscribe(
+      data => {
+          this.allDayBookings = data;
+          this.filterDayBookings();
+          console.log(data);
+      },
+      error => {
+          console.log(error);
+      });
+  }
+
   getCurrentVacationBalance(vacArr){
     var currVacBalance = 0; 
     $.each( vacArr, function( index, value ){
@@ -105,6 +144,21 @@ export class AccountComponent implements OnInit{
 
   }
 
+  filterDayBookings(){
+    var filteredBookings = []; 
+    var refDateFrom = this.dayBookingsRefDateFrom; 
+    var refDateTo = this.dayBookingsRefDateTo; 
+
+    $.each( this.allDayBookings, function( index, value ){
+      if (parseInt(value.refdate) >= refDateFrom && parseInt(value.refdate) <= refDateTo){
+        filteredBookings.push(value);
+      }
+        
+    });
+
+    this.filteredDayBookings = filteredBookings; 
+  }
+
   handlePaginagingClick(){
     this.topEntries = this.topEntries + 5;
   }
@@ -112,5 +166,21 @@ export class AccountComponent implements OnInit{
   getYtdDisplay(){
     return new Date().getFullYear();
   }
+
+  onDateChanged(event, src) {
+    if (src == "from"){
+      this.dayBookingsRefDateFrom = parseInt(event.formatted);  
+    }else if (src == "to"){
+      this.dayBookingsRefDateTo = parseInt(event.formatted); 
+    }else{
+      throw "No source defined for the onDateChanged Event"
+    }
+
+    this.filterDayBookings();
+
+    console.log('onDateChanged(): ', event.date, ' - jsdate: ', new Date(event.jsdate).toLocaleDateString(), ' - formatted: ', event.formatted, ' - epoc timestamp: ', event.epoc);
+    
+}
+
 
 }

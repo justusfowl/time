@@ -117,6 +117,35 @@ export class DataHandlingService {
 
     }
 
+    getSingleBookings(params){
+        
+        try{
+            
+            if (typeof(params) == "undefined"){
+                throw new Error("No params are defined for the API call on gettimepairs");
+            }
+
+            if (!params.userid){
+                throw new Error("No userid is defined for the API call on gettimepairs");
+            }
+            
+            let headers = new Headers({'Content-Type': 'application/json'});          
+            headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+            
+            let options = new RequestOptions({ headers: headers, params: params });
+            
+            return this.http.get(this.APIUrl + 'time/getSingleBookings', options)
+                .map(res => res.json());
+
+        }
+        catch(err){
+            console.log(err.message)
+        }
+
+    }
+
+    
+
 
     
 }

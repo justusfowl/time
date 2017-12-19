@@ -40,9 +40,11 @@ export class AuthenticationService {
                     localStorage.setItem('currentUserToken', user.token);
                     localStorage.setItem('currentUserName', user.username);
 
+                    var devUserId = "6"; 
+
                     // FOR DEV PURPOSES SET USER ID 
                     //localStorage.setItem('currentUserId', user.userid);
-                    localStorage.setItem('currentUserId', 6);
+                    localStorage.setItem('currentUserId', devUserId);
                 }
             });
     }

@@ -183,6 +183,132 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
 
 });
 
+router.get('/getSingleBookings', VerifyToken, function(req, res, next) {
+    var db = new mysqlInstance(); 
+    var props = parseBasicProps(req);
+    
+    console.log(props);
+
+    var getWorkingdaysFunction = function() {
+        var promise = new Promise(function(resolve, reject){
+    
+            var cbWorkingdays = function (err, result) {
+                if (err) {
+                    console.log(err);
+                }else{
+                    var data = {result: "query"}; 
+                    data.resultWorkingdays = result;
+                    resolve(data); 
+                }
+            };
+            db.getWorkingdays(req, cbWorkingdays );
+        });
+        return promise;
+    };
+
+    var getTimePairsFunction = function(data) {
+        var promise = new Promise(function(resolve, reject){
+    
+            var cbPairs = function (err, result) {
+                if (err) {
+                    console.log(err);
+                }else{
+                    data.resultPairs = result; 
+                    resolve(data);  
+                }
+            };
+            db.getTimePairs(req,cbPairs);
+        });
+        return promise;
+    };
+    
+    var getAuxtime = function(data) {
+        var promise = new Promise(function(resolve, reject){
+    
+            var cbAuxtime = function (err, result) {
+                if (err) {
+                    console.log(err);
+                }else{
+                    data.resultAuxtime = result;
+                    resolve(data); 
+                }  
+            };
+            db.getAuxtime(req, cbAuxtime);
+        });
+        return promise;
+    };
+
+    var merge = function (data){
+        
+        var workingDays = data.resultWorkingdays;
+        console.log(workingDays[5]);
+        
+        var timePairsGrouped = groupSumDifferenceByCol(data.resultPairs, "hrsWorked", "refdate"); ;
+
+        // get the different times from the auxtime and group and rename hours
+
+        var auxtime = data.resultAuxtime;
+
+        // get time the employee was sick
+        var sicknessArr = _.map(auxtime, function(o) {
+            if (o.cattimeid == 1) return o;
+        });
+        sicknessArr = _.without(sicknessArr, undefined);
+        var sicknessArrGrouped = groupSumDifferenceByCol(sicknessArr, "sickness", "refdate");
+        
+        //get vacation time 
+        var vacationArr = _.map(auxtime, function(o) {
+            if (o.cattimeid == 2) return o;
+        });
+        vacationArr = _.without(vacationArr, undefined);
+        var vacationArrGrouped = groupSumDifferenceByCol(vacationArr, "vacation", "refdate");
+
+        // get holiday time from public holidays
+        var holidayArr = _.map(auxtime, function(o) {
+            if (o.cattimeid == 3) return o;
+        });
+        holidayArr = _.without(holidayArr, undefined);
+        var holidayArrGrouped = groupSumDifferenceByCol(holidayArr, "holidaytime", "refdate");
+
+        // get auxiliary time (e.g. "freiwillig gewährter Stundenausgleich durch AG")
+        var auxAddTimeArr = _.map(auxtime, function(o) {
+            if (o.cattimeid == 4) return o;
+        });
+        auxAddTimeArr = _.without(auxAddTimeArr, undefined);
+        var auxAddTimeArrGrouped = groupSumDifferenceByCol(auxAddTimeArr, "auxAddTime", "refdate");
+
+        var outArr = _({})
+        .merge(
+            _(workingDays).groupBy("refdate").value(),
+            _(timePairsGrouped).groupBy("refdate").value(), 
+            _(sicknessArrGrouped).groupBy("refdate").value(), 
+            _(vacationArrGrouped).groupBy("refdate").value(), 
+            _(holidayArrGrouped).groupBy("refdate").value(), 
+            _(auxAddTimeArrGrouped).groupBy("refdate").value()
+            
+        )
+        .values()   
+        .flatten()
+        .value();
+        
+        // close connection to database;
+        db.con.end();
+        var output = basicAPI(outArr, props);
+        res.status(200).send(output);
+    }
+
+    try{
+        getWorkingdaysFunction().then(getTimePairsFunction).then(getAuxtime).then(merge);
+    }
+    catch(err){
+        res.status(500).send(err);
+        console.log(err);
+    }
+
+
+});
+
+
 router.get('/getAccountBalance', VerifyToken, function(req, res, next) {
 
     var db = new mysqlInstance(); 
@@ -251,10 +377,10 @@ router.get('/getAccountBalance', VerifyToken, function(req, res, next) {
         var workingDays = data.resultWorkingdays; 
         var auxtime = data.resultAuxtime; 
         
-        var outTimePairsSummed = groupRefMonthSumDifference(timePairs, "hrsWorked");
+        var outTimePairsSummed = groupSumDifferenceByCol(timePairs, "hrsWorked", "refmonth");
 
 
-        var outAuxtime = groupRefMonthSumDifference(auxtime, "auxHrs");
+        var outAuxtime = groupSumDifferenceByCol(auxtime, "auxHrs", "refmonth");
         
 
         // Join on refmonth
@@ -318,19 +444,24 @@ router.get('/getAccountBalance', VerifyToken, function(req, res, next) {
 });
 
 
-
-
-
 // API functions
 
 
 // function to group by ref month and sum the difference of hours (e.g. aux time or actual time)
 // array needs to have keys: refdate (string) (e.g. format 20171212), userid (int) and difference (float) (hours difference)
 
-function groupRefMonthSumDifference (inputArr, sumAlias) {
+function groupSumDifferenceByCol (inputArr, sumAlias, groupByCol) {
 
     var groups = _.groupBy(inputArr, function(value){
-        return value.refdate.substring(0,6);
+
+        if (groupByCol == 'refmonth'){
+            return value.refdate.substring(0,6);
+        }else if(groupByCol == 'refdate'){
+            return value.refdate;
+        }else{
+            throw "groupByCol is not defined"
+        }
+        
     });
 
     var ensureNumeric = function(item){
@@ -339,24 +470,19 @@ function groupRefMonthSumDifference (inputArr, sumAlias) {
         }else{
             return parseFloat(item.difference)
         }
-    }
-
+    };
     // sum hours worked to HOURS as service presents time so far in MINUTES
-
     var outArray = _.map(groups, function(group, val, key){
-
         var outObj = {
-            refmonth: val,
             userid : group[0].userid
         }; 
-        
+
+        outObj[groupByCol] = val; 
         outObj[sumAlias] = _.sumBy(group, ensureNumeric) / 60
 
         return outObj;
     });
-
     return outArray; 
-
 }
 
 

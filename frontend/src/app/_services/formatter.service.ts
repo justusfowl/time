@@ -28,4 +28,9 @@ export class FormatterService {
 
         return refMonth.substring(4,6) + "/" + refMonth.substring(0,4);
     }
+
+    formatRefDate (refDate){
+        
+        return refDate.substring(6,8) + "." + refDate.substring(4,6) + "." + refDate.substring(0,4);
+    }
 }

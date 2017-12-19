@@ -87,6 +87,35 @@ mysqlInstance.prototype.getContractVacationHrs = function (req, cb) {
     this.con.query(sql, cb );
 }
 
+mysqlInstance.prototype.getWorkingdays = function (req, cb) {
+
+    var db = this; 
+
+    var sql = "SELECT\
+        days.day,\
+        dayofweek(lookupdates.date) as weekday,\
+        month(lookupdates.date) as month,\
+        year(lookupdates.date) as year,\
+        replace(lookupdates.date,'-','') as refdate,\
+        holidaytbl.holiday\
+        FROM time.tbllookupdate as lookupdates\
+        LEFT JOIN \
+        time.tbllookupholidays\
+        as holidaytbl\
+            ON lookupdates.date = holidaytbl.refdate\
+        LEFT JOIN \
+        time.tbllookupdays as days\
+            on dayofweek(lookupdates.date) = days.dayid\
+        where\
+        dayofweek(lookupdates.date) >= 2 and dayofweek(lookupdates.date) <= 6 and\
+        month(lookupdates.date) <= month(now()) and year(lookupdates.date) <= year(now())\
+        order by lookupdates.date; "
+
+
+    this.con.query(sql, cb );
+}
+
+
 
 mysqlInstance.prototype.getNumberWorkingdays = function (req, cb) {
 

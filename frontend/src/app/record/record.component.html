@@ -25,9 +25,10 @@
                 <tr *ngFor="let row of timePairs;">
                     <th scope="row">{{identifyMissingMatch(row)}} </th>
                     <td>{{formatter.formatDateDayMonth(row.refdate)}}
-                            <p class="subfigure">
-                                    {{formatter.formatDateYear(row.refdate)}}
-                            </p></td>
+                        <p class="subfigure">
+                                {{formatter.formatDateYear(row.refdate)}}
+                        </p>
+                    </td>
                     <td>
                         {{row.cometime}}
                         <p class="subfigure">

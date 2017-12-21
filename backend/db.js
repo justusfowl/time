@@ -12,6 +12,8 @@ var mysqlInstance = function(){
     this.con = mysql.createConnection(this.databaseConfig)
 }
 
+
+
 mysqlInstance.prototype.addActualTime = function (req, cb) {
 
     var userid = req.body.userid;
@@ -32,13 +34,35 @@ mysqlInstance.prototype.addActualTime = function (req, cb) {
 
 }
 
-mysqlInstance.prototype.getUserId = function (username, cb ) {
-        
-    var sql = "SELECT userid FROM time.tblusers\
-    where username = '"+ username + "';";
+mysqlInstance.prototype.getUserInfo = function (req, cb ) {
+    
+    var filterStr; 
 
-    console.log("getUserId of user: " + username)
+    try{
+        var userid = parseInt(req.query.userid);
+        filterStr = "times.userid = " + userid;
+    }
+    catch(err){
+        // req = username
+        filterStr = "times.username = '" + req + "'";
+    }
 
+    var sql = "SELECT\
+            times.validto,\
+            users.userid,\
+            users.username,\
+            users.usercategoryid,\
+            times.validfrom,\
+            timehrsperweek,\
+            vacationdata.*\
+        FROM time.tbllookupusertimes as times\
+        inner join time.tblusers as users on times.userid = users.userid\
+        inner join (\
+                SELECT * FROM time.tblvacation where year(validto) = '2099'\
+        ) as vacationdata on times.userid = vacationdata.userid\
+        where " + filterStr + " and year(times.validto) = '2099';"
+
+    console.log("getUserInfo of user: " + userid)
 
     this.con.query(sql, cb );
 
@@ -58,6 +82,17 @@ mysqlInstance.prototype.getAuxtime = function (req, cb) {
 
     
     this.con.query(sql, cb );
+}
+
+
+mysqlInstance.prototype.getRawBookings = function (req, cb) {
+    
+        var db = this; 
+        var userid = parseInt(req.query.userid);
+    
+        var sql = "SELECT *, replace(left(actualtime,10),'-','') as refdate  FROM time.tblactualtime where userid = "+ userid + " ;";
+        
+        this.con.query(sql, cb );
 }
 
 
@@ -87,9 +122,26 @@ mysqlInstance.prototype.getContractVacationHrs = function (req, cb) {
     this.con.query(sql, cb );
 }
 
-mysqlInstance.prototype.getWorkingdays = function (req, cb) {
+mysqlInstance.prototype.getWorkingdays = function (req, cb, flagBeforeToday = false, flagExcludeHolidays = false) {
 
-    var db = this; 
+    var db = this;
+
+    var filterStr = ""; 
+
+    if (flagBeforeToday){
+        filterStr = " and month(lookupdates.date) <= month(now()) and year(lookupdates.date) <= year(now()) ";
+    }
+    else if (typeof(req.query.betweenStartDate) != "undefined"){
+        var startDate = req.query.betweenStartDate.replace(/-/g,"");
+        var endDate = req.query.betweenEndDate.replace(/-/g,""); 
+
+        filterStr = " and CAST(replace(lookupdates.date, '-', '') as decimal) >= " + parseInt(startDate) + " \
+            and CAST(replace(lookupdates.date, '-', '') as decimal) <= " + parseInt(endDate);
+    }
+
+    if (flagExcludeHolidays){
+        filterStr = filterStr + " and holidaytbl.holiday is null "
+    }
 
     var sql = "SELECT\
         days.day,\
@@ -107,10 +159,11 @@ mysqlInstance.prototype.getWorkingdays = function (req, cb) {
         time.tbllookupdays as days\
             on dayofweek(lookupdates.date) = days.dayid\
         where\
-        dayofweek(lookupdates.date) >= 2 and dayofweek(lookupdates.date) <= 6 and\
-        month(lookupdates.date) <= month(now()) and year(lookupdates.date) <= year(now())\
+        dayofweek(lookupdates.date) >= 2 and dayofweek(lookupdates.date) <= 6\
+        " + filterStr + "\
         order by lookupdates.date; "
 
+        console.log(sql)
 
     this.con.query(sql, cb );
 }
@@ -302,6 +355,145 @@ mysqlInstance.prototype.getTimePairs = function (req, cb) {
     
 
 }
+
+
+
+
+
+// REQUESTS AREA
+
+
+mysqlInstance.prototype.getTimeRequests = function (req, cb) {
+    
+        var db = this; 
+        var userid = parseInt(req.query.userid);
+    
+        var sql = "SELECT requestid,\
+            directionid,\
+            concat(addtimedate, ' ', addtime) as detailaddtime,\
+            requeststatus,\
+            requeststatuschange,\
+            userid,\
+            requestcatid,\
+            replace(addtimedate,'-','') as refdate\
+            FROM time.tblrequestqueueaddtime where userid = "+ userid + " ;";
+        
+        this.con.query(sql, cb );
+}
+
+
+
+mysqlInstance.prototype.getVacRequests = function (req, cb) {
+    
+        var db = this; 
+        var userid = parseInt(req.query.userid);
+    
+        var sql = "SELECT *, replace(left(requesttimestart,10),'-','') as refdate\
+        FROM time.tblrequestqueuevac where userid = "+ userid + " ;";
+        
+        this.con.query(sql, cb );
+}
+
+
+mysqlInstance.prototype.addRequest = function (req, cb) {
+    
+    var db = this; 
+    var userid = parseInt(req.body.userid);
+    var requestcatid = parseInt(req.body.requestcatid);
+
+    function checkIfReqIsBeforeToday(date,time){
+
+        var reqDate = new Date(date + " " + time); 
+
+        if (new Date() - reqDate > 0){
+            return true; 
+        }else{
+            return false; 
+        }
+
+    }
+
+    function retAddTimeSqlStr(directionid, userid, addtimedate, addtime, requestcatid, delactualtimeid  ){
+        
+            if (typeof(delactualtimeid) == "undefined"){
+                var value = "(" + directionid + ",'" + addtimedate + "','" + addtime + "'," + userid + "," + requestcatid + ")"
+            }else{
+                var value = "(" + directionid + ",'" + addtimedate + "','" + addtime + "'," + userid + "," + requestcatid + "," + delactualtimeid + ")"
+            }
+
+            return value; 
+        
+        }
+
+    if (requestcatid == 1){
+
+        var dateAdd = req.body.dateAdd;
+        var timeAdd = req.body.timeAdd;
+        var directionAdd = req.body.directionAdd;
+
+        if (!checkIfReqIsBeforeToday(dateAdd, timeAdd)){
+            cb("not valid, requests only for past events", []);
+            return;
+        }
+
+        var sql = "INSERT INTO `time`.`tblrequestqueueaddtime`\
+        (`directionid`,\
+        `addtimedate`,\
+        `addtime`,\
+        `userid`,\
+        `requestcatid`)\
+        VALUES "
+
+        var addTime = retAddTimeSqlStr(directionAdd, userid, dateAdd, timeAdd, 1 );
+        this.con.query(sql + addTime + ";", cb );
+
+    }else if (requestcatid == 2){
+
+    }
+    else if (requestcatid == 3){
+
+        var dateHomeVisit = req.body.dateHomeVisit;
+        var timeHomeVisitFrom = req.body.timeHomeVisitFrom;
+        var timeHomeVisitTo = req.body.timeHomeVisitTo;
+        
+        if (!checkIfReqIsBeforeToday(dateHomeVisit, timeHomeVisitFrom)){
+            cb("not valid, requests only for past events", []);
+            return;
+        }
+
+        var sql = "INSERT INTO `time`.`tblrequestqueueaddtime`\
+        (`directionid`,\
+        `addtimedate`,\
+        `addtime`,\
+        `userid`,\
+        `requestcatid`)\
+        VALUES "
+
+        var comeStr = retAddTimeSqlStr(1, userid, dateHomeVisit, timeHomeVisitFrom, 3 );
+        var goStr = retAddTimeSqlStr(2, userid, dateHomeVisit, timeHomeVisitTo, 3 );
+
+        this.con.query(sql + comeStr + "," + goStr + ";", cb );
+    }
+    else{
+        cb("requestcatid not implemented on server", [])
+    }
+        
+}
+
+mysqlInstance.prototype.addVacRequest = function (req, cb) {
+    
+    var db = this; 
+    var userid = parseInt(req.body.userid);
+    var dateVacStart = req.body.dateVacStart;
+    var dateVacEnd = req.body.dateVacEnd;
+
+    var sql = "INSERT INTO `time`.`tblrequestqueuevac` (`userid`, `requesttimestart`,`requesttimeto`)\
+    VALUES ( " + userid + ",'" + dateVacStart + "','" + dateVacEnd + "');"
+
+    this.con.query(sql, cb );
+
+};
+
 
 
 module.exports = mysqlInstance;

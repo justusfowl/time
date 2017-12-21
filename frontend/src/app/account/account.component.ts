@@ -17,7 +17,7 @@ export class AccountComponent implements OnInit{
     dateFormat: 'yyyymmdd',
   };
 
-  // Initialized to specific date (09.10.2018).
+  // Initialized to specific dates in ngOnInit
   public refDateFrom: any;
   public refDateTo: any;
 
@@ -40,11 +40,14 @@ export class AccountComponent implements OnInit{
   allDayBookings: any; 
   dayBookingsRefDateFrom: Number;
   dayBookingsRefDateTo: Number;
+  rawBookings: any; 
+  hrsWorkedThisMonth : any; 
+  timehrsPerMonthThisMonth : any; 
 
   ngOnInit(){
 
     var today = new Date();
-    var todayAMonthAgo = new Date(today - 30*24*60*60*1000); 
+    var todayAMonthAgo = new Date(today.getTime() - 30*24*60*60*1000); 
     
     this.refDateFrom = { date: { year: todayAMonthAgo.getFullYear(), month: todayAMonthAgo.getUTCMonth()+1, day: todayAMonthAgo.getDate() } };
     this.refDateTo = { date: { year: today.getFullYear(), month: today.getUTCMonth()+1, day: today.getDate() } };
@@ -55,20 +58,19 @@ export class AccountComponent implements OnInit{
     this.getAccountBalance();
     this.getVacationInfo();
     this.getSingleBookings();
+    this.getRawBookings();
 
   }
 
-  getPairBookings(){
+  getRawBookings(){
     var userId = this.authService.getUserId(); 
-    let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", "top": 20,
-    "aggregation": "(difference with sum as totalHrsWorked)"};
+    let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", "top": this.topEntries};
 
-    this.dataHandlingService.getTimePairs(params).subscribe(
+    this.dataHandlingService.getRawBookings(params).subscribe(
       data => {
-          alert("pair bookings nirgends verwendet bislang")
+          this.rawBookings = data;
       },
       error => {
-          //this.alertService.error(error);
           console.log(error);
       });
 
@@ -80,11 +82,11 @@ export class AccountComponent implements OnInit{
 
     this.dataHandlingService.getAccountBalance(params).subscribe(
       data => {
-          //this.router.navigate([this.returnUrl]);
           this.balance = data;
+          this.hrsWorkedThisMonth = this.balance[0].hrsWorked; 
+          this.timehrsPerMonthThisMonth = this.balance[0].timehrspermonth;
       },
       error => {
-          //this.alertService.error(error);
           console.log(error);
       });
 
@@ -112,7 +114,6 @@ export class AccountComponent implements OnInit{
       data => {
           this.allDayBookings = data;
           this.filterDayBookings();
-          console.log(data);
       },
       error => {
           console.log(error);
@@ -180,7 +181,7 @@ export class AccountComponent implements OnInit{
 
     console.log('onDateChanged(): ', event.date, ' - jsdate: ', new Date(event.jsdate).toLocaleDateString(), ' - formatted: ', event.formatted, ' - epoc timestamp: ', event.epoc);
     
-}
+  }
 
 
 }

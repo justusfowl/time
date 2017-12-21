@@ -5,10 +5,10 @@
         {{vacHoursRemaining}}
     </div>
     <div class="col-md-3 accKeyFigure">
-            {{formatter.formatNumberDecimals(balance[0].hrsWorked,2)}}
+            {{formatter.formatNumberDecimals(hrsWorkedThisMonth,2)}}
     </div>
     <div class="col-md-3 accKeyFigure">
-            {{formatter.formatNumberDecimals(balance[0].timehrspermonth,2)}}
+            {{formatter.formatNumberDecimals(timehrsPerMonthThisMonth,2)}}
     </div>
     <div class="col-md-3 accKeyFigure">
             {{calculateTotalBalance()}}
@@ -28,8 +28,6 @@
         Balance ({{getYtdDisplay()}})
     </div>
 </div>
-
-<button type="button" class="btn btn-secondary recordBtn" data-val=2 (click)="getSingleBookings()">TEST</button>
 
 <div class="container primeContent">
     <div class="panel-group" id="accordion">
@@ -157,20 +155,41 @@
                     <table class="table table-hover">
                             <thead>
                                 <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Tag</th>
-                                <th scope="col">Kommen</th>
-                                <th scope="col">Gehen</th>
-                                <th scope="col">Arbeitszeit</th>
+                                <th scope="col">Datum</th>
+                                <th scope="col">Uhrzeit</th>
+                                <th scope="col">Eintrag</th>
+                                <th scope="col">WorkflowId</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                <th scope="row">1</th>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                                <td>@mdo</td>
+                                <ng-container *ngFor="let row of rawBookings; let i=index">
+                                    <tr *ngIf="i<topEntries"> 
+                                        <td>{{formatter.formatDateDayMonth(row.refdate)}}
+                                            <p class="subfigure">
+                                                {{formatter.formatDateYear(row.refdate)}}
+                                            </p>
+                                        </td>
+                                        <td>
+                                            {{row.actualtime}}
+                                            <p class="subfigure">
+                                                {{row.actualtimeid}}
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <div *ngIf="row.directionid == 1; else elseBlock">Kommen</div>
+                                            <ng-template #elseBlock>Gehen</ng-template> 
+                                            <p class="subfigure">
+                                                {{row.directionid}}
+                                            </p>
+                                        </td>
+                                        <td>{{row.requestid}}</td>
+                                    </tr>
+                                </ng-container>
+                                <tr (click)="handlePaginagingClick()">
+                                    <th colspan="3"></th>
+                                    <td>
+                                        Mehr...
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

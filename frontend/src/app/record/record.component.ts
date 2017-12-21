@@ -48,8 +48,9 @@ export class RecordComponent implements OnInit{
     this.recordDir = clickedDir; 
     console.log(this.authService.getUsername())
     
-    
   }
+
+
   recordBtnClick(event, i){
     this.addActualTime();
   }

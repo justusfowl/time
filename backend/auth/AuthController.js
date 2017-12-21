@@ -102,7 +102,7 @@ router.post('/login', function(req, res) {
             resolve(data);
             };
 
-        db.getUserId(user,cb);
+        db.getUserInfo(user,cb);
 
         });
         return promise;

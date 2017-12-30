@@ -10,7 +10,7 @@ var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var bcrypt = require('bcryptjs');
 var config = require('../config'); // get config file
 
-router.use(bodyParser.urlencoded({ extended: false }));
+//router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
 router.post('/login', function(req, res) { 
@@ -62,7 +62,7 @@ router.post('/login', function(req, res) {
     var promise = new Promise(function(resolve, reject){
       ad.isUserMemberOf(user, config.AD.usergroup, function(err, isMember) {
         if (err) {
-          console.log('ERROR: ' +JSON.stringify(err));
+          console.log('ERROR: ' + JSON.stringify(err));
           return;
         }
         data.userGroup =  isMember;
@@ -95,20 +95,30 @@ router.post('/login', function(req, res) {
             if (err) {
                 console.log(err);
             }else{
-                var userid = result[0].userid;
-                data.userid = userid; 
+                
+                data.result = result; 
+
+                resolve(data);
             }
             db.con.end();
-            resolve(data);
             };
-
-        db.getUserInfo(user,cb);
+        
+        var input = {"username" : user}
+        db.getUserInfo(input, cb);
 
         });
         return promise;
       };
 
   var returnResAndToken = function(data) {
+
+    if (data.result.length == 0){
+      console.warn("No user could be found within the application");
+      res.status(401).send({ auth: false, token: null });
+      return;
+    }else{
+      data.userid = data.result[0].userid;
+    }
      
      var promise = new Promise(function(resolve, reject){
         // if auth = true

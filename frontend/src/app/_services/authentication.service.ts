@@ -18,19 +18,22 @@ export class AuthenticationService {
     getUserId(){
         return localStorage.getItem('currentUserId');
     }
+
+    getIsAdmin(){
+        return localStorage.getItem('currentUserIsAdmin');
+    }
     
     login(username: string, password: string) {
 
-        const body: URLSearchParams = new URLSearchParams(); 
-        body.set('username', username); 
-        body.set('password', password); 
 
-        let headers = new Headers({ 'Content-Type': 'application/x-www-form-urlencoded'});
+        var body = {"username" : username, "password": password};
+
+        let headers = new Headers({ 'Content-Type': 'application/json'});
         let options = new RequestOptions({ headers: headers });
         
         console.log("login in auth service")
         
-        return this.http.post('http://localhost:3000/api/auth/login', body.toString(), options)
+        return this.http.post('http://localhost:3000/api/auth/login', JSON.stringify(body), options)
             .map((response: Response) => {
                 // login successful if there's a jwt token in the response
                 let user = response.json();
@@ -39,12 +42,14 @@ export class AuthenticationService {
                     // store user details and jwt token in local storage to keep user logged in between page refreshes
                     localStorage.setItem('currentUserToken', user.token);
                     localStorage.setItem('currentUserName', user.username);
-
-                    var devUserId = "6"; 
+                    localStorage.setItem('currentUserIsAdmin', user.adminGroup);
+                    
+                    localStorage.setItem('currentUserId', user.userid);
 
                     // FOR DEV PURPOSES SET USER ID 
-                    //localStorage.setItem('currentUserId', user.userid);
-                    localStorage.setItem('currentUserId', devUserId);
+
+                    //var devUserId = "6";
+                    //localStorage.setItem('currentUserId', devUserId);
                 }
             });
     }
@@ -54,6 +59,7 @@ export class AuthenticationService {
         localStorage.removeItem('currentUserToken');
         localStorage.removeItem('currentUserName');
         localStorage.removeItem('currentUserId');
+        localStorage.removeItem('currentUserIsAdmin');
         alert("logout")
     }
     

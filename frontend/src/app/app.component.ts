@@ -16,6 +16,8 @@ export class AppComponent implements OnInit{
   }
   title = 'app';
 
+  username : any;
+
   ngOnInit(){
       console.log("init")
       $(".nav a").on("click", function(){
@@ -23,6 +25,7 @@ export class AppComponent implements OnInit{
         $(this).parent().addClass("active");
      });
 
+     this.username = this.authorizationService.getUsername();
 
   }
 

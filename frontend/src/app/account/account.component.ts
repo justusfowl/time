@@ -83,6 +83,9 @@ export class AccountComponent implements OnInit{
     this.dataHandlingService.getAccountBalance(params).subscribe(
       data => {
           this.balance = data;
+
+          console.log(data);
+          
           this.hrsWorkedThisMonth = this.balance[0].hrsWorked; 
           this.timehrsPerMonthThisMonth = this.balance[0].timehrspermonth;
       },

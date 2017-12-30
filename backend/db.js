@@ -7,62 +7,75 @@ var mysqlInstance = function(){
         host: config.database.host,
         user: config.database.username,
         password: config.database.password, 
-        database: config.database.database
+        database: config.database.database, 
+        timezone : "+00:00"
       }, 
     this.con = mysql.createConnection(this.databaseConfig)
 }
 
 
 
-mysqlInstance.prototype.addActualTime = function (req, cb) {
+mysqlInstance.prototype.addActualTime = function (input, cb) {
 
-    var userid = req.body.userid;
-    var time = req.body.time;
-    var directionid = req.body.directionid;
+    var userid = input.userid; 
+    var time = input.time; 
+    var directionid = input.directionid;
+    var requestid = "Null"; 
 
-    console.log("this is the time requested: ")
-    console.log(time);
+    if (input.requestid){
+        requestid = input.requestid; 
+    }
 
     var sql = "INSERT INTO `time`.`tblactualtime`\
     (`actualtime`,`userid`,`directionid`,`requestid`)\
-    VALUES('"+time+"',"+userid+","+directionid+",Null);";
-
-    console.log("addActualTime")
-
+    VALUES('"+time+"',"+userid+","+directionid+","+requestid+");";
 
     this.con.query(sql, cb );
 
 }
 
-mysqlInstance.prototype.getUserInfo = function (req, cb ) {
+mysqlInstance.prototype.getUserInfo = function (input, cb ) {
     
-    var filterStr; 
+    var filterStr = "" ;
 
     try{
-        var userid = parseInt(req.query.userid);
-        filterStr = "times.userid = " + userid;
+
+        if (input.username){
+            filterStr = " WHERE users.username = '" + input.username + "'"
+        }
+
+        if (!input.all) {
+            if (typeof(input.userid) != "undefined"){
+                var userid = parseInt(input.userid);
+                filterStr = " WHERE times.userid = " + userid;
+            }else{
+                console.log("No userid defined within the request")
+            }
+            
+        }else{
+            console.log("Requesting all users' info")
+        }
+        
     }
     catch(err){
-        // req = username
-        filterStr = "times.username = '" + req + "'";
+        console.log(err)
     }
 
     var sql = "SELECT\
-            times.validto,\
-            users.userid,\
-            users.username,\
-            users.usercategoryid,\
-            times.validfrom,\
-            timehrsperweek,\
-            vacationdata.*\
-        FROM time.tbllookupusertimes as times\
-        inner join time.tblusers as users on times.userid = users.userid\
-        inner join (\
-                SELECT * FROM time.tblvacation where year(validto) = '2099'\
-        ) as vacationdata on times.userid = vacationdata.userid\
-        where " + filterStr + " and year(times.validto) = '2099';"
+        users.username,\
+        users.username as name,\
+        users.userid,\
+        users.userid as id,\
+        vacationdata.*,\
+        times.*\
+        FROM\
+        time.tblusers  as users\
+        LEFT join (SELECT * FROM time.tbllookupusertimes where year(validto) > 2080) as times ON times.userid = users.userid\
+        LEFT join (SELECT * FROM time.tblvacation where year(validto) > 2080) as vacationdata ON times.userid = vacationdata.userid\
+        " + filterStr + ";"; 
 
-    console.log("getUserInfo of user: " + userid)
+
+    console.log(sql);
 
     this.con.query(sql, cb );
 
@@ -122,7 +135,7 @@ mysqlInstance.prototype.getContractVacationHrs = function (req, cb) {
     this.con.query(sql, cb );
 }
 
-mysqlInstance.prototype.getWorkingdays = function (req, cb, flagBeforeToday = false, flagExcludeHolidays = false) {
+mysqlInstance.prototype.getWorkingdays = function (input, cb, flagBeforeToday = false, flagExcludeHolidays = false) {
 
     var db = this;
 
@@ -131,9 +144,9 @@ mysqlInstance.prototype.getWorkingdays = function (req, cb, flagBeforeToday = fa
     if (flagBeforeToday){
         filterStr = " and month(lookupdates.date) <= month(now()) and year(lookupdates.date) <= year(now()) ";
     }
-    else if (typeof(req.query.betweenStartDate) != "undefined"){
-        var startDate = req.query.betweenStartDate.replace(/-/g,"");
-        var endDate = req.query.betweenEndDate.replace(/-/g,""); 
+    else if (typeof(input.betweenStartDate) != "undefined"){
+        var startDate = input.betweenStartDate.replace(/-/g,"");
+        var endDate = input.betweenEndDate.replace(/-/g,""); 
 
         filterStr = " and CAST(replace(lookupdates.date, '-', '') as decimal) >= " + parseInt(startDate) + " \
             and CAST(replace(lookupdates.date, '-', '') as decimal) <= " + parseInt(endDate);
@@ -162,8 +175,6 @@ mysqlInstance.prototype.getWorkingdays = function (req, cb, flagBeforeToday = fa
         dayofweek(lookupdates.date) >= 2 and dayofweek(lookupdates.date) <= 6\
         " + filterStr + "\
         order by lookupdates.date; "
-
-        console.log(sql)
 
     this.con.query(sql, cb );
 }
@@ -216,9 +227,9 @@ mysqlInstance.prototype.getNumberWorkingdays = function (req, cb) {
 
 }
 
-mysqlInstance.prototype.getTimePairs = function (req, cb) {
+mysqlInstance.prototype.getTimePairs = function (input, cb) {
 
-    var userid = parseInt(req.query.userid);
+    var userid = parseInt(input.userid);
 
     var db = this; 
     
@@ -363,35 +374,65 @@ mysqlInstance.prototype.getTimePairs = function (req, cb) {
 // REQUESTS AREA
 
 
-mysqlInstance.prototype.getTimeRequests = function (req, cb) {
+mysqlInstance.prototype.getTimeRequests = function (input, cb) {
     
         var db = this; 
-        var userid = parseInt(req.query.userid);
+
+        var whereStr = ""; 
+
+        if (input.userid){
+            var userid = parseInt(input.userid);
+            whereStr = "WHERE users.userid = " + userid + " "; 
+        }else if (input.requestId){
+            var requestId = parseInt(input.requestId);
+            whereStr = "WHERE requestid = " + requestId  + " "; 
+        }
+
+        if (input.all){
+            whereStr = ""; 
+        }
     
         var sql = "SELECT requestid,\
             directionid,\
             concat(addtimedate, ' ', addtime) as detailaddtime,\
+            addtimedate,\
             requeststatus,\
             requeststatuschange,\
-            userid,\
+            requests.userid,\
+            users.username,\
             requestcatid,\
             replace(addtimedate,'-','') as refdate\
-            FROM time.tblrequestqueueaddtime where userid = "+ userid + " ;";
+            FROM time.tblrequestqueueaddtime as requests\
+            inner join (select username, userid from time.tblusers) as users on users.userid = requests.userid\
+            " + whereStr + " \ ;";
         
         this.con.query(sql, cb );
 }
 
-
-
-mysqlInstance.prototype.getVacRequests = function (req, cb) {
+mysqlInstance.prototype.getVacRequests = function (input, cb) {
     
         var db = this; 
-        var userid = parseInt(req.query.userid);
+
+        var whereStr = ""; 
+        
+        if (input.userid){
+            var userid = parseInt(input.userid);
+            whereStr = "WHERE userid = " + userid + " "; 
+        }else if (input.requestId){
+            var requestId = parseInt(input.requestId);
+            whereStr = "WHERE requestid = " + requestId  + " "; 
+        }
+
+        if (input.all){
+            whereStr = ""; 
+        }
     
         var sql = "SELECT *, replace(left(requesttimestart,10),'-','') as refdate\
-        FROM time.tblrequestqueuevac where userid = "+ userid + " ;";
-        
-        this.con.query(sql, cb );
+        FROM time.tblrequestqueuevac " + whereStr + " ;";
+
+        console.log(sql);
+
+        this.con.query(sql, cb);
 }
 
 
@@ -480,6 +521,42 @@ mysqlInstance.prototype.addRequest = function (req, cb) {
         
 }
 
+mysqlInstance.prototype.addAuxTime = function (valueArr, cb) {
+    
+    var sql = "INSERT INTO `time`.`tblauxtime`\
+    (`userid`,\
+    `auxtimefrom`,\
+    `auxtimeto`,\
+    `cattimeid`,\
+    `requestid`)\
+    VALUES ?;";
+    
+    this.con.query(sql, [valueArr], cb);
+
+};
+
+mysqlInstance.prototype.changeStatusTimeRequest = function (requestId, status, cb) {
+    
+    var sql = "UPDATE time.tblrequestqueueaddtime SET requeststatus = " + parseInt(status) + "\
+    where requestid = "+parseInt(requestId) + "; ";
+
+    console.log("Status updated for: " + requestId);
+
+    this.con.query(sql, cb);
+
+};
+
+mysqlInstance.prototype.changeStatusVacRequest = function (requestId, status, cb) {
+    
+    var sql = "UPDATE time.tblrequestqueuevac SET requeststatus = " + parseInt(status) + "\
+    where requestid = "+parseInt(requestId) + "; ";
+
+    console.log("Status updated for: " + requestId);
+
+    this.con.query(sql, cb);
+
+};
+
 mysqlInstance.prototype.addVacRequest = function (req, cb) {
     
     var db = this; 
@@ -489,6 +566,88 @@ mysqlInstance.prototype.addVacRequest = function (req, cb) {
 
     var sql = "INSERT INTO `time`.`tblrequestqueuevac` (`userid`, `requesttimestart`,`requesttimeto`)\
     VALUES ( " + userid + ",'" + dateVacStart + "','" + dateVacEnd + "');"
+
+    this.con.query(sql, cb );
+
+};
+
+
+
+
+
+
+
+// Calender methods
+
+mysqlInstance.prototype.addPlantime = function (req, cb) {
+    
+    var db = this; 
+    var userid = parseInt(req.body.userid);
+    var plantimeStart = req.body.plantimeStart;
+    var plantimeEnd = req.body.plantimeEnd;
+
+    var sql = "INSERT INTO `time`.`tblplantime` (`userid`, `plantimestart`,`plantimeend`)\
+    VALUES ( " + userid + ",'" + plantimeStart + "','" + plantimeEnd + "');"
+
+    this.con.query(sql, cb );
+
+};
+
+mysqlInstance.prototype.getPlantime = function (req, cb) {
+    
+        var db = this;
+        
+        var filterStr = "" ; 
+        
+        // hier noch implementieren, dass auf einen nutzer gefiltert werden kann
+
+        try{
+            if (req.query.startDate){
+                filterStr = " where plantimestart >= '" + req.query.startDate + "' and plantimeend <= '" + req.query.endDate + "'"
+            }
+        }
+        catch(err){
+            console.log("no filters given")
+        }
+        
+    
+        var sql = "SELECT plantimeid as id,\
+                    plantimestart as start,\
+                    plantimeend as end,\
+                    tblplantime.userid,\
+                    tblusers.username,\
+                    tblusers.username as title\
+                    from time.tblplantime\
+                    left join time.tblusers on tblplantime.userid = tblusers.userid\
+                    " + filterStr + " ;";
+        
+        this.con.query(sql, cb );
+}
+
+
+mysqlInstance.prototype.updatePlantime = function (req, cb) {
+    
+    var db = this; 
+
+    var planTimeId = parseInt(req.body.planTimeId);
+    var plantimeStart = req.body.plantimeStart;
+    var plantimeEnd = req.body.plantimeEnd;
+
+    var sql = "UPDATE time.tblplantime SET\
+    plantimestart ='" + plantimeStart + "',\
+    plantimeend = '" + plantimeEnd + "'\
+    WHERE `plantimeid` = " + planTimeId + ";";
+
+    this.con.query(sql, cb );
+
+};
+
+mysqlInstance.prototype.deletePlantime = function (req, cb) {
+    
+    var db = this; 
+    var planTimeId = parseInt(req.body.planTimeId);
+
+    var sql = "DELETE FROM `time`.`tblplantime` where plantimeid = " + planTimeId + ";"
 
     this.con.query(sql, cb );
 

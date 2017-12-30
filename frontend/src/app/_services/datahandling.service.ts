@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers, Response, RequestOptions } from '@angular/http';
+import { Http, Headers, Response, RequestOptions,ResponseContentType } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map'
 
@@ -208,6 +208,71 @@ export class DataHandlingService {
 
     }
 
+    approveRequest(body) {
+        
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.APIUrl + 'time/approveRequest', JSON.stringify(body), options)
+            .map((response: Response) => {
+                // login successful if there's a jwt token in the response
+                let user = response.json();
+                console.log(user);
+            });
+            
+    }
+
+    approveVacRequest(body) {
+        
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.APIUrl + 'time/approveVacRequest', JSON.stringify(body), options)
+            .map((response: Response) => {
+                // login successful if there's a jwt token in the response
+                let user = response.json();
+                console.log(user);
+            });
+            
+    }
+
+
+    rejectRequest(body) {
+        
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.APIUrl + 'time/rejectRequest', JSON.stringify(body), options)
+            .map((response: Response) => {
+                // login successful if there's a jwt token in the response
+                let res = response.json();
+                console.log(res);
+            });
+            
+    }
+
+    rejectVacRequest(body) {
+        
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.APIUrl + 'time/rejectVacRequest', JSON.stringify(body), options)
+            .map((response: Response) => {
+                // login successful if there's a jwt token in the response
+                let res = response.json();
+                console.log(res);
+            });
+            
+    }
+
     getVacRequests(params){
         
         try{
@@ -223,11 +288,11 @@ export class DataHandlingService {
     checkParamsPrepareOptions(params){
 
         if (typeof(params) == "undefined"){
-            throw new Error("No params are defined for the API call on gettimepairs");
+            console.warn("No params are defined for the API call");
         }
 
         if (!params.userid){
-            throw new Error("No userid is defined for the API call on gettimepairs");
+            console.warn("No userid is defined for the API call on gettimepairs");
         }
         
         let headers = new Headers({'Content-Type': 'application/json'});          
@@ -253,6 +318,8 @@ export class DataHandlingService {
             });
             
     }
+
+    
 
     addVacRequest(body) {
         
@@ -291,10 +358,129 @@ export class DataHandlingService {
     }
 
 
+    // Calender / Scheduler handling
 
+
+    addPlantime(body) {
+        
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.APIUrl + 'time/addPlantime', JSON.stringify(body), options)
+            .map((response: Response) => {
+                // login successful if there's a jwt token in the response
+                let user = response.json();
+                console.log(user);
+            });
+            
+    }
+
+    getPlanActuals(params){
+        try{
+            return this.http.get(this.APIUrl + 'time/getPlanActuals', this.checkParamsPrepareOptions(params))
+                .map(res => res.json());
+        }
+        catch(err){
+            console.log(err.message)
+        }
+    }
+
+    getPlantime(params){
+        try{
+            return this.http.get(this.APIUrl + 'time/getPlantime', this.checkParamsPrepareOptions(params))
+                .map(res => res.json());
+        }
+        catch(err){
+            console.log(err.message)
+        }
+    }
+
+    updatePlantime(body) {
+        
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.APIUrl + 'time/updatePlantime', JSON.stringify(body), options)
+            .map((response: Response) => {
+                // login successful if there's a jwt token in the response
+                let user = response.json();
+                console.log(user);
+            });
+            
+    }
+
+    deletePlantime(body) {
+        
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.APIUrl + 'time/deletePlantime', JSON.stringify(body), options)
+            .map((response: Response) => {
+                // login successful if there's a jwt token in the response
+                let user = response.json();
+                console.log(user);
+            });
+            
+    }
+
+    // report section
+
+
+    getReport(params){
+
+        if (typeof(params) == "undefined"){
+            throw new Error("No params are defined for the API call on gettimepairs");
+        }
+
+        if (!params.userid){
+            throw new Error("No userid is defined for the API call on gettimepairs");
+        }
+        
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"));
+        headers.append('Accept',"application/pdf")
+        
+        let options = new RequestOptions({ headers: headers, params: params,responseType: ResponseContentType.Blob });
+
+
+
+        try{
+            return this.http.get(this.APIUrl + 'time/getReport', options ).map(
+                (res) => {
+                    return new Blob([res.blob()], { type: 'application/pdf' })
+                });
+        }
+        catch(err){
+            console.log(err.message)
+        }
+    }
     
 
+    // basic handling
 
+
+    getUserInfo(params){
+        try{
+            return this.http.get(this.APIUrl + 'time/getUserInfo', this.checkParamsPrepareOptions(params))
+                .map(res => res.json());
+        }
+        catch(err){
+            console.log(err.message)
+        }
+    }
+
+    filterItem(col, op, val1, val2 = null){
+
+        return {"column": col, "op": op, "val1": val1, "val2": val2}; 
+
+
+    }
 
     
 

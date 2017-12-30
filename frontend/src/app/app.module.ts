@@ -3,16 +3,22 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule  }    from '@angular/forms';
 import { HttpModule } from '@angular/http';
-import { MyDatePickerModule } from 'mydatepicker';
-
 import { AppComponent }            from './app.component';
+
+import { MyDatePickerModule } from 'mydatepicker';
+import {CalendarModule} from "ap-angular2-fullcalendar";
+import { MultiselectDropdownModule } from 'angular-2-dropdown-multiselect';
 
 import { LoginComponent  }   from './login/index';
 import { RecordComponent }   from './record/record.component';
 import { RequestComponent }   from './request/request.component';
 import { AccountComponent }   from './account/account.component';
-import { CalendarComponent }   from './calendar/calendar.component';
+import { SchedulerComponent }   from './scheduler/scheduler.component';
+import { AdminComponent }   from './admin/admin.component';
 import { PageNotFoundComponent }   from './notfound/notfound.component';
+import { StatComponent }   from './stat/stat.component';
+
+
 
 import { AuthenticationService, DataHandlingService, FormatterService, UtilService } from './_services/index';
 
@@ -25,7 +31,9 @@ const appRoutes: Routes = [
   { path: '', component: RecordComponent, canActivate: [AuthGuard]},
   { path: 'record', component: RecordComponent},
   { path: 'request', component: RequestComponent},
-  { path: 'calendar', component: CalendarComponent},
+  { path: 'scheduler', component: SchedulerComponent},
+  { path: 'statistics', component: StatComponent},
+  { path: 'admin', component: AdminComponent},
   { path: 'login', component: LoginComponent},
   { path: 'account', component: AccountComponent},
 
@@ -41,14 +49,18 @@ const appRoutes: Routes = [
     HttpModule, 
     FormsModule, 
     ReactiveFormsModule,
-    MyDatePickerModule
+    MyDatePickerModule, 
+    CalendarModule,
+    MultiselectDropdownModule
   ],
   declarations: [
     AppComponent,
     RecordComponent,
     RequestComponent,
-    CalendarComponent,
-
+    SchedulerComponent,
+    StatComponent,
+    AdminComponent,
+    
     LoginComponent,
     AccountComponent,
 
@@ -56,7 +68,7 @@ const appRoutes: Routes = [
   ],
   providers: [
     AuthGuard,
-    AuthenticationService, 
+    AuthenticationService,
     DataHandlingService, 
     FormatterService, 
     UtilService

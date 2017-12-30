@@ -195,39 +195,39 @@
             </div>
             <div id="collapseTwo" class="panel-collapse collapse">
                 <table class="table table-hover">
-                        <thead>
-                            <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Start</th>
-                            <th scope="col">Ende</th>
-                            <th scope="col">Std/Tag</th>
-                            <th scope="col">Bearbeitungsstatus</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <ng-container *ngFor="let row of vacRequests; let i=index">
-                                <tr *ngIf="i<topEntries">
-                                    <th scope="row">{{row.requestid}}
-                                    </th>
-                                    <td>{{row.requesttimestart}}</td>
-                                    <td>{{row.requesttimeto}}</td>
-                                    <td>{{row.manualreqdayvaluehrs}}</td>
-                                    <td>{{row.requeststatus}}
-                                        <p class="subfigure">
-                                            {{row.requeststatuschange}}
-                                        </p>
-                                    </td>
-                                </tr>
-                            </ng-container>
-                            <tr (click)="handlePaginagingClick()">
-                                <th colspan="4"></th>
-                                <td>
-                                    Mehr...
+                    <thead>
+                        <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Start</th>
+                        <th scope="col">Ende</th>
+                        <th scope="col">Std/Tag</th>
+                        <th scope="col">Bearbeitungsstatus</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let row of vacRequests; let i=index">
+                            <tr *ngIf="i<topEntries">
+                                <th scope="row">{{row.requestid}}
+                                </th>
+                                <td>{{row.requesttimestart}}</td>
+                                <td>{{row.requesttimeto}}</td>
+                                <td>{{row.manualreqdayvaluehrs}}</td>
+                                <td>{{row.requeststatus}}
+                                    <p class="subfigure">
+                                        {{row.requeststatuschange}}
+                                    </p>
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
+                        </ng-container>
+                        <tr (click)="handlePaginagingClick()">
+                            <th colspan="4"></th>
+                            <td>
+                                Mehr...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-  
     </div>
+</div>

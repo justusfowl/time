@@ -1,8 +1,7 @@
-
 var config = require('./config');
 
-
 var express = require('express');
+
 var app = express(); 
 
 global.__root   = __dirname + '/';  
@@ -27,5 +26,6 @@ app.use('/api/auth', AuthController);
 // time API
 var timeAPI = require(__root + 'v01/time');
 app.use('/api/v01/time', timeAPI);
+
 
 module.exports = app;

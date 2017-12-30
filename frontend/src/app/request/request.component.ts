@@ -147,21 +147,21 @@ export class RequestComponent implements OnInit{
 
   addVacRequest(requestcatid){
     
-        var userId = this.authService.getUserId(); 
-        var body = {"userid" : userId}
-        body["dateVacStart"] = this.dateVacStart.formatted.replace(/-/g,"");
-        body["dateVacEnd"] = this.dateVacEnd.formatted.replace(/-/g,"");
-    
-        this.dataHandlingService.addVacRequest(body).subscribe(
-          data => {
-            this.getVacRequests();
-            console.log(data);
-    
-          },
-          error => {
-              console.log(error);
-          });
-      }
+    var userId = this.authService.getUserId(); 
+    var body = {"userid" : userId}
+    body["dateVacStart"] = this.dateVacStart.formatted.replace(/-/g,"");
+    body["dateVacEnd"] = this.dateVacEnd.formatted.replace(/-/g,"");
+
+    this.dataHandlingService.addVacRequest(body).subscribe(
+        data => {
+        this.getVacRequests();
+        console.log(data);
+
+        },
+        error => {
+            console.log(error);
+        });
+    }
 
   getVacationValue(){
 

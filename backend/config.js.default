@@ -2,10 +2,22 @@
 // ========
 module.exports = {
     database : {
-            "host": "localhost", 
-            "username" : "user", 
-            "password": "pass"
-        }
+            "host": "{HOSTNAME}", 
+            "username" : "{USERNAME}", 
+            "password": "{PASSWORD}", 
+            "database": "time"
+        }, 
+    secret : 'supersecret', 
+    AD: {
+        "url": 'ldap:\/\/{FQDN-Of-DOMAIN-CONTROLLER}}', 
+        "baseDN": 'dc={DC},dc={dc}',
+        "baseDNLogin": '{DOMAIN}',
+        "usergroup": 'TimeUser', 
+        "admingroup" : 'TimeAdmin'
+
+    }, 
+    tokenValidSeconds : 20000000
+   
     
     };
   

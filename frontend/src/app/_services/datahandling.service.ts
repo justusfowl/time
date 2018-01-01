@@ -14,7 +14,8 @@ export class DataHandlingService {
         private util: UtilService
     ) { }
 
-    APIUrl = "http://localhost:3000/api/v01/";
+    BaseURL = "http://localhost:3000";
+    APIUrl = "/api/v01/";
 
     // example:
     // params can be one of:
@@ -25,7 +26,7 @@ export class DataHandlingService {
 
     getUserInfo(params){
         try{
-            return this.http.get(this.APIUrl + 'time/getUserInfo', this.checkParamsPrepareOptions(params))
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getUserInfo', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
         }
         catch(err){
@@ -46,7 +47,7 @@ export class DataHandlingService {
         
         console.log(headers);
         
-        return this.http.post(this.APIUrl + 'time/addActualTime', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/addActualTime', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -72,7 +73,7 @@ export class DataHandlingService {
             
             let options = new RequestOptions({ headers: headers, params: params });
             
-            return this.http.get(this.APIUrl + 'time/getTimePairs', options)
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getTimePairs', options)
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -101,7 +102,7 @@ export class DataHandlingService {
             
             let options = new RequestOptions({ headers: headers, params: params });
             
-            return this.http.get(this.APIUrl + 'time/getAccountBalance', options)
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getAccountBalance', options)
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -130,7 +131,7 @@ export class DataHandlingService {
             
             let options = new RequestOptions({ headers: headers, params: params });
             
-            return this.http.get(this.APIUrl + 'time/getVacationInfo', options)
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getVacationInfo', options)
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -159,7 +160,7 @@ export class DataHandlingService {
             
             let options = new RequestOptions({ headers: headers, params: params });
             
-            return this.http.get(this.APIUrl + 'time/getRawBookings', options)
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getRawBookings', options)
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -188,7 +189,7 @@ export class DataHandlingService {
             
             let options = new RequestOptions({ headers: headers, params: params });
             
-            return this.http.get(this.APIUrl + 'time/getSingleBookings', options)
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getSingleBookings', options)
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -220,7 +221,7 @@ export class DataHandlingService {
             
             let options = new RequestOptions({ headers: headers, params: params });
             
-            return this.http.get(this.APIUrl + 'time/getTimeRequests', options)
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getTimeRequests', options)
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -239,7 +240,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/approveRequest', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/approveRequest', JSON.stringify(body), options)
             .map((response: Response) => {
                 // login successful if there's a jwt token in the response
                 let user = response.json();
@@ -257,7 +258,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/approveVacRequest', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/approveVacRequest', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -272,7 +273,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/rejectRequest', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/rejectRequest', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -286,7 +287,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/rejectVacRequest', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/rejectVacRequest', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -296,7 +297,7 @@ export class DataHandlingService {
         this.util.showLoader();
         
         try{
-            return this.http.get(this.APIUrl + 'time/getVacRequests', this.checkParamsPrepareOptions(params))
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getVacRequests', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
         }
         catch(err){
@@ -316,7 +317,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/addRequest', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/addRequest', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -332,7 +333,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/addVacRequest', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/addVacRequest', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -342,7 +343,7 @@ export class DataHandlingService {
         this.util.showLoader();
 
         try{
-            return this.http.get(this.APIUrl + 'time/getVacationValue', this.checkParamsPrepareOptions(params))
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getVacationValue', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
         }
         catch(err){
@@ -355,7 +356,7 @@ export class DataHandlingService {
         this.util.showLoader();
 
         try{
-            return this.http.get(this.APIUrl + 'time/getWorkingdays', this.checkParamsPrepareOptions(params))
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getWorkingdays', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
         }
         catch(err){
@@ -374,7 +375,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/addPlantime', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/addPlantime', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -384,7 +385,7 @@ export class DataHandlingService {
         this.util.showLoader();
 
         try{
-            return this.http.get(this.APIUrl + 'time/getPlanActuals', this.checkParamsPrepareOptions(params))
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getPlanActuals', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
         }
         catch(err){
@@ -396,7 +397,7 @@ export class DataHandlingService {
         this.util.showLoader();
 
         try{
-            return this.http.get(this.APIUrl + 'time/getPlantime', this.checkParamsPrepareOptions(params))
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getPlantime', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
         }
         catch(err){
@@ -412,7 +413,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/updatePlantime', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/updatePlantime', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -425,7 +426,7 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        return this.http.post(this.APIUrl + 'time/deletePlantime', JSON.stringify(body), options)
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/deletePlantime', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
     }
@@ -451,7 +452,7 @@ export class DataHandlingService {
         let options = new RequestOptions({ headers: headers, params: params,responseType: ResponseContentType.Blob });
 
         try{
-            return this.http.get(this.APIUrl + 'time/getReport', options ).map(
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getReport', options ).map(
                 (res) => {
                     return this.util.hideLoader(new Blob([res.blob()], { type: 'application/pdf' }))
                 });

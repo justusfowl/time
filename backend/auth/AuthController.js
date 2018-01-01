@@ -26,10 +26,18 @@ router.post('/login', function(req, res) {
   var user = req.body.username;
   var pw = req.body.password;
 
+  /*
+  if (user.indexOf('@') == -1){
+    user = user + "@" + config.AD.baseDNLogin;
+  }
+  */
+
   if (typeof(user) == "undefined" || typeof(pw) == "undefined" ){
     res.status(401).send({ auth: false, token: null });
     return 
-  } 
+  }
+
+  console.log("login of: " + user);
   
   try{
     var ad = new ActiveDirectory({ url: config.AD.url , baseDN: config.AD.baseDN, username : user, password: pw});

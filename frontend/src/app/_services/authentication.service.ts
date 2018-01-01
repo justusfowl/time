@@ -20,10 +20,15 @@ export class AuthenticationService {
     }
 
     getIsAdmin(){
-        return localStorage.getItem('currentUserIsAdmin');
+        if (localStorage.getItem('currentUserIsAdmin') == "true"){
+            return true; 
+        }else{
+            return false; 
+        } 
     }
     
     login(username: string, password: string) {
+
 
 
         var body = {"username" : username, "password": password};
@@ -39,12 +44,14 @@ export class AuthenticationService {
                 let user = response.json();
                 console.log(user);
                 if (user && user.token) {
-                    // store user details and jwt token in local storage to keep user logged in between page refreshes
+                    // store user details and jwt token in local storage to keep user logged in between page refreshes 
+
                     localStorage.setItem('currentUserToken', user.token);
                     localStorage.setItem('currentUserName', user.username);
                     localStorage.setItem('currentUserIsAdmin', user.adminGroup);
-                    
                     localStorage.setItem('currentUserId', user.userid);
+
+                    $('#labelUsername').html(user.username);
 
                     // FOR DEV PURPOSES SET USER ID 
 
@@ -60,7 +67,9 @@ export class AuthenticationService {
         localStorage.removeItem('currentUserName');
         localStorage.removeItem('currentUserId');
         localStorage.removeItem('currentUserIsAdmin');
-        alert("logout")
+
+        $('#labelUsername').html("");
+        console.log("logout")
     }
     
 }

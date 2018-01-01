@@ -46,20 +46,22 @@ export class AccountComponent implements OnInit{
 
   ngOnInit(){
 
+    this.util.setNavOnRoute("account");
+
     var today = new Date();
     var todayAMonthAgo = new Date(today.getTime() - 30*24*60*60*1000); 
     
     this.refDateFrom = { date: { year: todayAMonthAgo.getFullYear(), month: todayAMonthAgo.getUTCMonth()+1, day: todayAMonthAgo.getDate() } };
     this.refDateTo = { date: { year: today.getFullYear(), month: today.getUTCMonth()+1, day: today.getDate() } };
 
-    this.dayBookingsRefDateFrom = parseFloat(todayAMonthAgo.getFullYear().toString() + (todayAMonthAgo.getUTCMonth()+1).toString() + todayAMonthAgo.getDate().toString()) ;
-    this.dayBookingsRefDateTo = parseFloat(today.getFullYear().toString() + (today.getUTCMonth()+1).toString() + today.getDate().toString()) ;
+    this.dayBookingsRefDateFrom = parseFloat(todayAMonthAgo.getFullYear().toString() + (todayAMonthAgo.getUTCMonth()+1).toString().padStart(2,"0") + todayAMonthAgo.getDate().toString().padStart(2,"0")) ;
+    this.dayBookingsRefDateTo = parseFloat(today.getFullYear().toString() + (today.getUTCMonth()+1).toString().padStart(2,"0") + today.getDate().toString().padStart(2,"0")) ;
     
     this.getAccountBalance();
     this.getVacationInfo();
     this.getSingleBookings();
     this.getRawBookings();
-
+    
   }
 
   getRawBookings(){
@@ -71,7 +73,7 @@ export class AccountComponent implements OnInit{
           this.rawBookings = data;
       },
       error => {
-          console.log(error);
+        this.dataHandlingService.errorHandler(error);
       });
 
   }
@@ -82,15 +84,12 @@ export class AccountComponent implements OnInit{
 
     this.dataHandlingService.getAccountBalance(params).subscribe(
       data => {
-          this.balance = data;
-
-          console.log(data);
-          
+          this.balance = data;          
           this.hrsWorkedThisMonth = this.balance[0].hrsWorked; 
           this.timehrsPerMonthThisMonth = this.balance[0].timehrspermonth;
       },
       error => {
-          console.log(error);
+        this.dataHandlingService.errorHandler(error);
       });
 
   }
@@ -101,10 +100,11 @@ export class AccountComponent implements OnInit{
 
     this.dataHandlingService.getVacationInfo(params).subscribe(
       data => {
+          console.log(data);
           this.getCurrentVacationBalance(data);
       },
       error => {
-          console.log(error);
+        this.dataHandlingService.errorHandler(error);
       });
   }
 
@@ -119,7 +119,7 @@ export class AccountComponent implements OnInit{
           this.filterDayBookings();
       },
       error => {
-          console.log(error);
+        this.dataHandlingService.errorHandler(error);
       });
   }
 
@@ -127,10 +127,46 @@ export class AccountComponent implements OnInit{
     var currVacBalance = 0; 
     $.each( vacArr, function( index, value ){
       if (value.refyear == new Date().getFullYear()){
-        currVacBalance += value.weightedContractVacHrs - value.totalHrsVacationTaken;
+
+        var vacationHrsAvailable = 0; 
+
+        if (typeof(value.weightedContractVacHrs) != "undefined"){
+          vacationHrsAvailable = value.weightedContractVacHrs;
+        
+        }
+        
+        var vacationHrsTaken = 0; 
+
+        if (typeof(value.totalHrsVacationTaken) != "undefined"){
+          vacationHrsTaken = value.totalHrsVacationTaken;
+        }
+
+        currVacBalance += vacationHrsAvailable - vacationHrsTaken;
       } 
     });
     this.vacHoursRemaining = this.formatter.formatNumberDecimals(currVacBalance,2);
+  }
+
+  deleteRequest(row){
+    
+    var actualtimeid = row.actualtimeid; 
+
+    var userId = this.authService.getUserId(); 
+    var body = {
+            "userid" : userId, 
+            "actualtimeid": actualtimeid, 
+            "requestcatid" : 2, 
+            "directionId" : row.directionid, 
+            "actualtime": row.actualtime
+          }
+
+    this.dataHandlingService.addRequest(body).subscribe(
+      data => {
+        this.getRawBookings();
+      },
+      error => {
+        this.dataHandlingService.errorHandler(error);
+      });
   }
 
   calculateTotalBalance(){
@@ -169,6 +205,14 @@ export class AccountComponent implements OnInit{
 
   getYtdDisplay(){
     return new Date().getFullYear();
+  }
+
+  hideDeleteReqBtn(row){
+    if (row.requestid == null){
+      return true; 
+    }else{
+      return false; 
+    }
   }
 
   onDateChanged(event, src) {

@@ -1,46 +1,57 @@
-<nav class="navbar navbar-default">
+<nav class="navbar navbar-default" [hidden]="checkIfAuth()" >
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Time</a>
         <ul class="nav navbar-nav navbar-left">
-                <li class="nav-item active">
+                <li id="nav_record" class="nav-item active">
                     <a class="nav-link" routerLink="/record" routerLinkActive="active">Erfassen</a>
                 </li>
-                <li class="nav-item">
+                <li id="nav_account" class="nav-item">
                     <a class="nav-link" routerLink="/account" routerLinkActive="active">Konto</a>
                 </li>
-                <li class="nav-item ">
+                <li id="nav_request" class="nav-item ">
                         <a class="nav-link" routerLink="/request" routerLinkActive="active">Anträge</a>
                 </li>
-                <li class="nav-item">
+                <li id="nav_scheduler" class="nav-item">
                     <a class="nav-link" routerLink="/scheduler" routerLinkActive="active">Kalender</a>
                 </li>
-                <li class="nav-item">
+        </ul>
+        <ul class="nav navbar-nav navbar-left" [hidden]="checkIfAdmin()" >
+                <li id="nav_statistics" class="nav-item">
                     <a class="nav-link" routerLink="/statistics" routerLinkActive="active">Statistik</a>
                 </li>
-                <li class="nav-item">
+                <li id="nav_admin" class="nav-item">
                     <a class="nav-link" routerLink="/admin" routerLinkActive="active">Admin</a>
                 </li>
-                <li class="nav-item">
+                <li id="nav_login" class="nav-item">
                     <a class="nav-link" routerLink="/login" routerLinkActive="active">Login</a>
+                </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+                <li class="nav-item">
+                    <p id="labelUsername" class="navbar-text nav-link">{{username}}</p>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" (click)="clickLogout()" >Logout</a>
                 </li>
         </ul>
-        <p class="navbar-text navbar-right">Signed in as {{username}}</p>
+        
     </div>
     
 </nav>
 
-<div id="mainContainer" class="container">
+<div class="loaderContainer hide">
+    <div class="loader"></div>
+</div>
 
+
+<div id="mainContainer" class="container">
   <div class="container">
       <router-outlet></router-outlet>
   </div>
-  
-  <footer class="footer">
-      <div class="container">
-          <span class="text-muted">2015-17 Copyright Facharztpraxis für Allgemeinmedizin TimeSystem</span>
-      </div>
-  </footer>
 </div>
+
+<footer class="footer">
+    <div class="container">
+        <span class="text-muted">2015-17 Copyright Facharztpraxis für Allgemeinmedizin TimeSystem</span>
+    </div>
+</footer>

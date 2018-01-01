@@ -1,8 +1,8 @@
-import { Component, OnInit  } from '@angular/core';
+import { Component, OnInit, OnDestroy  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 
-import { AuthenticationService,  DataHandlingService, FormatterService } from '../_services/index';
+import { AuthenticationService,  DataHandlingService, FormatterService, UtilService } from '../_services/index';
 
 @Component({
   selector: 'app-root',
@@ -10,14 +10,15 @@ import { AuthenticationService,  DataHandlingService, FormatterService } from '.
   styleUrls: ['../app.component.css']
 })
 
-export class RecordComponent implements OnInit{
+export class RecordComponent implements OnInit, OnDestroy{
 
   constructor(
     private router: Router, 
     private route: ActivatedRoute,
     private authService: AuthenticationService,
     private dataHandlingService : DataHandlingService, 
-    private formatter : FormatterService
+    private formatter : FormatterService,
+    private util: UtilService
   
   ){
    
@@ -26,10 +27,13 @@ export class RecordComponent implements OnInit{
   currTime : any
   recordDir = 1;
   timePairs : any;
-  topEntries = 2; 
+  topEntries = 2;
+  updateInterval : any; 
   
 
   ngOnInit(){
+
+    this.util.setNavOnRoute("record");
 
     $(".recordBtn").on("click", function(){
       $(".recordBtnGroup").find(".active").removeClass("active");
@@ -37,19 +41,23 @@ export class RecordComponent implements OnInit{
     });
 
    this.currTime = new Date();
-
    this.getPairBookings();
+   this.updateInterval = setInterval(this.updateCurrTime.bind(this), 1000);
 
+  }
+
+  updateCurrTime(){
+    this.currTime = new Date(); 
+  }
+
+  ngOnDestroy(){
+    clearInterval(this.updateInterval);
   }
 
   dirBtnClick(event,i){
     let clickedDir = event.target.dataset.val; 
-    console.log(clickedDir)
-    this.recordDir = clickedDir; 
-    console.log(this.authService.getUsername())
-    
+    this.recordDir = clickedDir;
   }
-
 
   recordBtnClick(event, i){
     this.addActualTime();
@@ -58,16 +66,15 @@ export class RecordComponent implements OnInit{
   addActualTime(){
     let userId = this.authService.getUserId();
     let currDir = this.recordDir; 
-    let currTime = this.currTime; 
+    let currTime = this.util.formatDateToIsoWithTZ(this.currTime); 
     
     this.dataHandlingService.addActualTime(parseInt(userId), currTime, currDir).subscribe(
       data => {
           //this.router.navigate([this.returnUrl]);
-          console.log("success");
+          this.getPairBookings();
       },
       error => {
-          //this.alertService.error(error);
-          console.log(error);
+          this.dataHandlingService.errorHandler(error);
       });
       
   }
@@ -82,8 +89,7 @@ export class RecordComponent implements OnInit{
           this.timePairs = data
       },
       error => {
-          //this.alertService.error(error);
-          console.log(error);
+          this.dataHandlingService.errorHandler(error);
       });
 
   }

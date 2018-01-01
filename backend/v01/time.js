@@ -10,6 +10,93 @@ var fs = require("fs");
 
 router.use(bodyParser.json());
 
+/*
+var schedule = require('node-schedule');
+var j = schedule.scheduleJob('16 * * * * *', function(){
+    console.log('The answer to life, the universe, and everything!');
+});
+*/
+
+function checkForHoliday(inputDate){
+
+    var db = new mysqlInstance();
+
+    var data = {
+        db: db,
+        input: {
+            betweenStartDate: '2018-01-01',
+            betweenEndDate : '2018-01-01', 
+            all: true
+        }, 
+        vacationWorkingDays : [], 
+        dateVacStart : '20180101', 
+        dateVacEnd : '20180101'
+    }
+
+    var getWorkingdaysFunction = function(data) {
+        var promise = new Promise(function(resolve, reject){
+    
+            var cbWorkingdays = function (err, result) {
+                if (err) {
+                    console.log(err);
+                }else{
+                    data.resultWorkingdays = result;
+                    resolve(data); 
+                }
+            };
+            db.getWorkingdays(data.input, cbWorkingdays);
+        });
+        return promise;
+    };
+
+    // check if the input date is a holiday or not
+
+    // get all users 
+
+    // loop through all users and get the value of working day
+
+    // insert as auxtime
+
+    var iterateFunction = function (data){
+
+        if (data.resultWorkingdays[0].holiday != null){
+            console.log("HOLIDAAAAAAY")
+        }else{
+            console.log("No Holiday")
+        }
+
+        var insertValueInAuxTimeFunction = function (data){
+            console.log(data.input.userid)
+            console.log(data.output.vacationValues);
+        };
+
+        data.outFunction = insertValueInAuxTimeFunction;
+
+        var iterateUser = function (row){
+
+            var copyData = _.cloneDeep(data);
+
+            copyData.input.userid = row.userid;
+            copyData.userInfo.length = 0; 
+            copyData.userInfo.push(row); 
+
+            decideUponUserCategory(copyData);
+        }
+
+        _(data.userInfo).forEach(iterateUser);
+
+    };
+
+    try{
+        getWorkingdaysFunction(data)
+            .then(getUserInfoFunction)
+            .then(iterateFunction)
+    }
+    catch(err){
+        console.log(err);
+    }
+        
+}
 
 // API Endpoints
 
@@ -22,6 +109,8 @@ router.post('/addActualTime', VerifyToken, function(req, res, next) {
         time : req.body.time,
         directionid : req.body.directionid,
     }; 
+
+    console.log(req.body.time);
 
     var db = new mysqlInstance();
     var cb = function (err, result) {
@@ -56,8 +145,6 @@ router.get('/getTimePairs', VerifyToken, function(req, res, next) {
         data.input.userid = userid; 
     }
 
-    console.log("hahahahahahahahah" + data.input);
-
     var outFunction = function (data){
 
         // apply basic API and props parsing for sorting etc.
@@ -85,39 +172,26 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
 
     var db = new mysqlInstance();
 
-    var getVacationHrsTaken = function() {
-        var promise = new Promise(function(resolve, reject){
-    
-            var cbVacation = function (err, result) {
-                if (err) {
-                    console.log(err);
-                }else{
-                    var data = {result: "query"}; 
-                    data.auxHrs = result; 
-                    resolve(data);  
-                }
-            };
-
-            db.getAuxtime(req,cbVacation);
-            
-        });
-        return promise;
-    };
+    var data = {};
+    data.db = db;
+    data.req = req;
+    data.input = {"userid" : req.query.userid};
 
     var getContractVacationHrs = function(data) {
+
+        var input = data.input; 
+
         var promise = new Promise(function(resolve, reject){
     
             var cbVacationContract = function (err, result) {
                 if (err) {
                     console.log(err);
                 }else{
-                    data.contractVacationHrs = result; 
-                    resolve(data);  
+                    data.contractVacationHrs = result;
+                    resolve(data);
                 }
             };
-
-            db.getContractVacationHrs(req,cbVacationContract);
-            
+            db.getContractVacationHrs(input,cbVacationContract);
         });
         return promise;
     };
@@ -126,8 +200,8 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
 
         // data is already filtered by userid through SQL
         
-        var auxHrs = data.auxHrs;
-        var contractVacationHrs = data.contractVacationHrs; 
+        var auxHrs = data.resultAuxtime;
+        var contractVacationHrs = data.contractVacationHrs;
         
         // get weighted number of vacation days per year
         
@@ -136,7 +210,7 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
         var totalCntArray = _.map(groups, function(group, val, key){
         
           return {
-                refyear: val, 
+                    refyear: val, 
                     totalDays : _.sumBy(group, "cntDays")
                 };
         });
@@ -155,19 +229,17 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
         var weightedContractVacHrsArr = _.map(groups, function(group, val, key){
         
           return {
-            refyear: val,
+                    refyear: val,
                     userid : group[0].userid,
                     weightedContractVacHrs : _.sumBy(group, "relWeight")
                 };
         });
-
 
         // filter auxHours for vacation hours
         
         var vacationArr = _.map(auxHrs, function(o) {
             if (o.cattimeid == 2) return o;
         });
-        
         
         var groupbyRefYear = _.groupBy(vacationArr, "refyear");
         
@@ -179,27 +251,36 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
                 };
         });
         
-
         // Join on refyear
         
-        var outArr = _({})
-        .merge(
-            _(weightedContractVacHrsArr).groupBy("refyear").value(),
-            _(totalHrsVacationTaken).groupBy("refyear").value()
-        )
-        .values()   
-        .flatten()
-        .value();
+        if (totalHrsVacationTaken.length > 0){
 
+            var outArr = _({})
+            .merge(
+                _(weightedContractVacHrsArr).groupBy("refyear").value(),
+                _(totalHrsVacationTaken).groupBy("refyear").value()
+            )
+            .values()
+            .flatten()
+            .value();
+
+        }else{
+           var outArr = weightedContractVacHrsArr;
+        }
+
+        // get vacation info only for current calender year
+        var outArr = _.filter(outArr, function(item){
+            return item.refyear == ((new Date()).getFullYear()).toString();
+        });
+        console.log(outArr);
+        
         // close connection to database;
         db.con.end();
-        console.log(outArr);
-
         res.status(200).send(outArr);
     }
 
     try{
-        getVacationHrsTaken().then(getContractVacationHrs).then(merge);
+        getAuxtimeFunction(data).then(getContractVacationHrs).then(merge);
     }
     catch(err){
         res.status(500).send(err);
@@ -250,23 +331,7 @@ router.get('/getSingleBookings', VerifyToken, function(req, res, next) {
                     resolve(data); 
                 }
             };
-            db.getWorkingdays(req, cbWorkingdays, true);
-        });
-        return promise;
-    };
-   
-    var getAuxtimeFunction = function(data) {
-        var promise = new Promise(function(resolve, reject){
-    
-            var cbAuxtime = function (err, result) {
-                if (err) {
-                    console.log(err);
-                }else{
-                    data.resultAuxtime = result;
-                    resolve(data); 
-                }  
-            };
-            db.getAuxtime(req, cbAuxtime);
+            db.getWorkingdays(data.input, cbWorkingdays, true);
         });
         return promise;
     };
@@ -274,7 +339,6 @@ router.get('/getSingleBookings', VerifyToken, function(req, res, next) {
     var merge = function (data){
         
         var workingDays = data.resultWorkingdays;
-        console.log(workingDays[5]);
 
         var timePairsGrouped = groupSumDifferenceByCol(data.resultPairs, "hrsWorked", "refdate");
 
@@ -349,7 +413,6 @@ var getUserInfoFunction = function(data) {
 
     var input = data.input; 
 
-
     var promise = new Promise(function(resolve, reject){
 
         var cbUserInfo = function (err, result) {
@@ -365,13 +428,13 @@ var getUserInfoFunction = function(data) {
     return promise;
 };
 
-
-
 var getNumberWorkingdaysFunction = function(data) {
 
     var db = data.db;
     var req = data.req; 
     var res = data.res; 
+
+    var input = data.input; 
 
     var promise = new Promise(function(resolve, reject){
 
@@ -384,7 +447,7 @@ var getNumberWorkingdaysFunction = function(data) {
             }
         };
 
-        db.getNumberWorkingdays(req, cbWorkingdays );
+        db.getNumberWorkingdays(input, cbWorkingdays );
 
     });
     return promise;
@@ -394,7 +457,9 @@ var getAuxtimeFunction = function(data) {
 
     var db = data.db;
     var req = data.req; 
-    var res = data.res; 
+    var res = data.res;
+
+    var input = data.input;
 
     var promise = new Promise(function(resolve, reject){
 
@@ -408,7 +473,7 @@ var getAuxtimeFunction = function(data) {
             
         };
     
-        db.getAuxtime(req, cbAuxtime );
+        db.getAuxtime(input, cbAuxtime );
 
     });
     return promise;
@@ -443,12 +508,16 @@ var getTimePairsFunction = function(data) {
 var mergeAccBalance = function (data){
     var promise = new Promise(function(resolve, reject){
         
+        // get actual working time data
         var timePairs = data.resultPairs;
-        var workingDays = data.resultWorkingdays; 
+
+        // get "tobe" working time
+        var workingDays = data.resultWorkingdays;
+
+        // get auxiliary time, e.g. sickness and vacation
         var auxtime = data.resultAuxtime; 
         
         var outTimePairsSummed = groupSumDifferenceByCol(timePairs, "hrsWorked", "refmonth");
-
 
         var outAuxtime = groupSumDifferenceByCol(auxtime, "auxHrs", "refmonth");
         
@@ -491,7 +560,18 @@ var mergeAccBalance = function (data){
         }
 
         _(outArr).forEach(calcBalance);
-        data.result = outArr; 
+
+        
+
+        
+
+        // filter for the rows with refdate <= today()
+        var today = new Date();
+        var output = _.filter(outArr, function(monthRow){
+            return parseInt(monthRow.refmonth) <= parseInt((today.getFullYear()).toString() + (today.getMonth() + 1).toString().padStart(2,"0"));
+        });
+
+        data.result = output;
         resolve(data); 
         
     });
@@ -571,6 +651,7 @@ var decideUponUserCategory = function(data){
     var res = data.res; 
 
     var vacationWorkingDays = data.vacationWorkingDays;
+
     var userInfo = data.userInfo[0]; 
 
     var cntDays = vacationWorkingDays.length; 
@@ -588,6 +669,7 @@ var decideUponUserCategory = function(data){
     _(vacationWorkingDays).forEach(addFlagFullWeek);
 
     if (userInfo.usercategoryid == 1){
+
         var addConstantVacTime = function (row){ 
             row.avgHrsWorked = userInfo.vacationhrsvalueperday
         }
@@ -600,13 +682,14 @@ var decideUponUserCategory = function(data){
 
         data.outFunction(data);
 
-        
-        
     }else if (userInfo.usercategoryid == 2){
 
         data["vacationWorkingDays"] = vacationWorkingDays;
 
         try{
+            delete data.input.betweenEndDate;
+            delete data.input.betweenStartDate;
+
             getRelevantWorkingdaysFunction(data).then(getTimePairsFunction).then(mergeVacationValue).then(data.outFunction);
         }
         catch(err){
@@ -628,6 +711,7 @@ var getRelevantWorkingdaysFunction = function(data) {
     var db = data.db;
     var req = data.req; 
     var res = data.res; 
+    var input = data.input;
 
     var promise = new Promise(function(resolve, reject){
 
@@ -640,12 +724,10 @@ var getRelevantWorkingdaysFunction = function(data) {
             }
         };
 
-        db.getWorkingdays(req, cbWorkingdays);
+        db.getWorkingdays(input, cbWorkingdays);
     });
     return promise;
 };
-
-
 
 var mergeVacationValue = function (data){
     var db = data.db;
@@ -656,8 +738,6 @@ var mergeVacationValue = function (data){
     var timePairs = data.resultPairs; 
     var vacationWorkingDays = data.vacationWorkingDays;
     var userInfo = data.userInfo;
-
-
 
     var vacationStart = data.dateVacStart;
     var vacationEnd = data.dateVacEnd; 
@@ -689,18 +769,16 @@ var mergeVacationValue = function (data){
         .merge(
             _(workingDaysLast13weeks).groupBy("refdate").value(),
             _(timePairsGrouped).groupBy("refdate").value()
-            
         )
         .values()   
         .flatten()
         .value();
 
-        var ensureExistHrsWorked = function (row){ 
+        var ensureExistHrsWorked = function (row){
             // get relative weight of vaction hrs per day
             if (typeof(row.hrsWorked) == "undefined" || row.hrsWorked == null || isNaN(row.hrsWorked)){
                 row.hrsWorked = 0; 
             }
-
         }
 
         _(outArr).forEach(ensureExistHrsWorked);
@@ -717,14 +795,14 @@ var mergeVacationValue = function (data){
             }
             var outObj = {
                 userid : userId
-            }; 
+            };
             outObj["day"] = group[0].day; 
             outObj["weekday"] = parseInt(val); 
             outObj["avgHrsWorked"] = _.meanBy(group, "hrsWorked")
 
             return outObj;
         });
-        
+
         outArray = _.filter(outArray, function(row){
             return parseInt(row.weekday) >= 2 && parseInt(row.weekday) <= 6;
         });
@@ -839,6 +917,8 @@ router.get('/getWorkingdays', VerifyToken, function(req, res, next) {
 // REQUESTS AREA for the workflow handling
 
 var getTimeRequestsFunction = function(data) {
+
+    // TODO: Hier noch ausschließlich zugänglich für eigene Requests wenn kein Admin (req.adminGroup)
     
     var db = data.db;
     var input = data.input; 
@@ -941,6 +1021,8 @@ var getVacRequestsFunction = function(data) {
 };
 
 router.get('/getVacRequests', VerifyToken, function(req, res, next) {
+
+    // TODO: Hier noch ausschließlich zugänglich für eigene Requests wenn kein Admin (req.adminGroup)
     
     console.log("getVacRequests triggered");
     
@@ -956,8 +1038,6 @@ router.get('/getVacRequests', VerifyToken, function(req, res, next) {
     if (req.query.all){
         data.input.all = true; 
     }
-
-    console.log(req.query); 
 
     data.res = res;
     data.props= props; 
@@ -985,7 +1065,6 @@ router.get('/getVacRequests', VerifyToken, function(req, res, next) {
     
 });
 
-
 router.post('/addRequest', VerifyToken, function(req, res, next) {
     
     console.log("addRequest triggered");
@@ -996,6 +1075,7 @@ router.post('/addRequest', VerifyToken, function(req, res, next) {
             res.status(500).send(err);
             console.log(err);
         }else{
+            console.log("req added");
             res.status(200).send({status: "valid"});
         }
         db.con.end();
@@ -1026,21 +1106,17 @@ router.post('/approveRequest', VerifyToken, function(req, res, next) {
     
     console.log("approveRequest triggered");
 
+   
+    
+    var db = new mysqlInstance();
+
     var requestId = req.body.requestId; 
-    
-    var db = new mysqlInstance();
 
-    // get all data from the requestId
-
-    var db = new mysqlInstance();
-    
     var data = {};
     data.db = db;
     data.req = req;
     data.input = {};
     data.input.requestId = requestId; 
-
-
     data.res = res;
     //sdata.props= props; 
 
@@ -1050,19 +1126,19 @@ router.post('/approveRequest', VerifyToken, function(req, res, next) {
         var detailaddtime = data.resultTimeRequests[0].detailaddtime;
         var userid = data.resultTimeRequests[0].userid;
         var directionid = data.resultTimeRequests[0].directionid;
+        var delactualtimeid = data.resultTimeRequests[0].delactualtimeid;
         
+        var input = {
+            userid : userid,
+            time : detailaddtime,
+            directionid : directionid,
+            requestid : requestId, 
+            delactualtimeid: delactualtimeid
+        }; 
         
         // if reqCategory == 1 >> Zeitnachtrag, 2 >> Löschantrag, 3 >> Hausbesuch
         
-        if (requestcatid == 1) {
-
-            
-            var input = {
-                userid : userid,
-                time : detailaddtime,
-                directionid : directionid,
-                requestid : requestId
-            }; 
+        if (requestcatid == 1 || requestcatid == 3 ) {
 
             console.log("approve an id" + requestId);
 
@@ -1081,25 +1157,33 @@ router.post('/approveRequest', VerifyToken, function(req, res, next) {
 
         }else if (requestcatid == 2) {
             
-        }else if (requestcatid == 3) {
-            
+            var cb = function (err, result) {
+                if (err) {
+                    res.status(500).send(err);
+                    console.log(err);
+                }else{
+                    res.status(200).send({status: "valid | request deleted"});
+                    db.changeStatusTimeRequest(requestId,1);
+                }
+                db.con.end();
+            };
+            db.deleteActualTime(input,cb);
         }
-        
-        // apply basic API and props parsing for sorting etc.
-        //var output = basicAPI(data.resultTimeRequests, props); 
-        
-        // close connection to database;
-        //db.con.end();
-
-        //res.status(200).send(data.resultTimeRequests);
 
     };
 
+    // enable status changes for requests only for admins
     try{
-        getTimeRequestsFunction(data)
-            .then(outFunction);
+        if(req.adminGroup){
+            getTimeRequestsFunction(data).then(outFunction);
+        }else{
+            db.con.end();
+            res.status(401).send({status: "No privileges"});
+        }
+        
     }
     catch(err){
+        db.con.end();
         res.status(500).send(err);
         console.log(err);
     }
@@ -1123,7 +1207,15 @@ router.post('/rejectRequest', VerifyToken, function(req, res, next) {
         }
         db.con.end();
         };
-    db.changeStatusTimeRequest(requestId,2, cb);
+    
+    // enable status changes for requests only for admins
+    if(req.adminGroup){
+        db.changeStatusTimeRequest(requestId,2, cb);
+    }else{
+        db.con.end();
+        res.status(401).send({status: "No privileges"});
+    }
+    
 });
 
 
@@ -1158,10 +1250,7 @@ router.post('/approveVacRequest', VerifyToken, function(req, res, next) {
         data.dateVacStart = requesttimestart;
         data.dateVacEnd = requesttimeto;         
 
-        var inputArray = []; 
-
-
-        console.log(data.output.vacationValues.constantHrsValuePerDay);
+        var inputArray = [];
 
         data.output.vacationOverview.forEach(function(item,index){
 
@@ -1196,9 +1285,14 @@ router.post('/approveVacRequest', VerifyToken, function(req, res, next) {
     };
 
     data.outFunction = outFunction;
-
+    // enable status changes for requests only for admins
     try{
-        getVacRequestsFunction(data).then(getUserInfoFunction).then(getWorkingDaysDuringVacDurationFunction).then(decideUponUserCategory);
+        if(req.adminGroup){
+            getVacRequestsFunction(data).then(getUserInfoFunction).then(getWorkingDaysDuringVacDurationFunction).then(decideUponUserCategory);
+        }else{
+            res.status(401).send({status: "No privileges"});
+        }
+        
     }
     catch(err){
         db.con.end();
@@ -1206,7 +1300,6 @@ router.post('/approveVacRequest', VerifyToken, function(req, res, next) {
         console.log(err);
     }
 
-    
 });
 
 router.post('/rejectVacRequest', VerifyToken, function(req, res, next) {
@@ -1224,7 +1317,15 @@ router.post('/rejectVacRequest', VerifyToken, function(req, res, next) {
         }
         db.con.end();
         };
-    db.changeStatusVacRequest(requestId, 2, cb);
+
+    // enable status changes for requests only for admins
+    if(req.adminGroup){
+        db.changeStatusVacRequest(requestId, 2, cb);
+    }else{
+        db.con.end();
+        res.status(401).send({status: "No privileges"});
+    }
+    
 });
 
 // SCHEDULER AREA for the calender handling
@@ -1244,8 +1345,15 @@ router.post('/addPlantime', VerifyToken, function(req, res, next) {
         }
         db.con.end();
         };
-    db.addPlantime(req,cb);
-        
+
+    // enable status changes for requests only for admins
+    if(req.adminGroup){
+        db.addPlantime(req,cb);
+    }else{
+        db.con.end();
+        res.status(401).send({status: "No privileges"});
+    }
+
 });
 
 router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
@@ -1295,24 +1403,6 @@ router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
         return promise;
     };
 
-    /*
-    var getTimePairsFunction = function(data) {
-        var promise = new Promise(function(resolve, reject){
-    
-            var cbPairs = function (err, result) {
-                if (err) {
-                    console.log(err);
-                }else{
-                    data.resultPairs = result; 
-                    resolve(data);  
-                }
-            };
-            db.getTimePairs(req,cbPairs);
-        });
-        return promise;
-    };
-    */
-
     var merge = function(data) {
 
         db.con.end(); 
@@ -1351,7 +1441,6 @@ router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
 
 router.get('/getPlantime', VerifyToken, function(req, res, next) {
     
-    console.warn("HIER MUSS NOCH DIE BESCHRÄNKUNG all=true auf ADMINS eingerichtet werden");
     console.log("getTimeRequests triggered");
 
     var props = parseBasicProps(req);
@@ -1388,7 +1477,15 @@ router.post('/updatePlantime', VerifyToken, function(req, res, next) {
         }
         db.con.end();
         };
-    db.updatePlantime(req,cb);
+    
+    // enable status changes for requests only for admins
+    if(req.adminGroup){
+        db.updatePlantime(req,cb);
+    }else{
+        db.con.end();
+        res.status(401).send({status: "No privileges"});
+    }
+    
         
 });
 
@@ -1406,7 +1503,14 @@ router.post('/deletePlantime', VerifyToken, function(req, res, next) {
         }
         db.con.end();
         };
-    db.deletePlantime(req,cb);
+
+     // enable status changes for requests only for admins
+    if(req.adminGroup){
+        db.deletePlantime(req,cb);
+    }else{
+        db.con.end();
+        res.status(401).send({status: "No privileges"});
+    }
         
 });
 
@@ -1425,8 +1529,12 @@ router.get('/getUserInfo', VerifyToken, function(req, res, next) {
 
     var input = {}; 
 
-    if (req.query.all){
-        input.all = true;
+    if(req.adminGroup){
+        if (req.query.all){
+            input.all = true;
+        }else{
+            input.userid = req.query.userid;
+        }
     }else{
         input.userid = req.query.userid;
     }
@@ -1461,6 +1569,10 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
     data.req = req;
     data.res = res;
     data.props = props; 
+
+    data.input = { 
+        "userid": req.query.userid 
+    };
 
     res.setHeader('Content-type', 'application/pdf');
 
@@ -1657,8 +1769,7 @@ function parseBasicProps(req){
     }
 
     if (typeof(req.query.filters) != "undefined"){
-       console.log(typeof(req.query.filters));
-       
+
        var filters = [];
 
        if (typeof(req.query.filters) == "object"){
@@ -1672,8 +1783,6 @@ function parseBasicProps(req){
        }
 
        var groups = _.groupBy(filters, "column");
-       console.log("groups: ")
-       console.log(groups);
         props.filters = groups;
     }
 
@@ -1886,7 +1995,7 @@ function getLocalRefDateFromDate(inDate){
     var month = inDate.getMonth() + 1;
     var year = inDate.getFullYear();
 
-    var localRefDate = year.toString() + month.toString().padStart(2,"0") + dayDate.toString();
+    var localRefDate = year.toString() + month.toString().padStart(2,"0") + dayDate.toString().padStart(2,"0");
 
     return localRefDate;
 
@@ -1896,3 +2005,5 @@ function getLocalRefDateFromDate(inDate){
 
     
 module.exports = router;
+
+// checkForHoliday(null);

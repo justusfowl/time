@@ -9,7 +9,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
     moduleId: module.id.toString(),
-    templateUrl: 'login.component.html'
+    templateUrl: 'login.component.html',
+    styleUrls: ['../app.component.css']
 }) 
 
 export class LoginComponent implements OnInit {
@@ -50,13 +51,12 @@ export class LoginComponent implements OnInit {
                 data => {
                     this.router.navigate(["/record"]);
                     console.log(data);
-                    console.log("LOGIN DATA");
                 },
                 error => {
                     //this.alertService.error(error);
                     this.loading = false;
                     console.log(error);
-                    console.log("LOGIN ERROR")
+                    alert("Something went wrong with the login - please try again")
                 });
     }
 }

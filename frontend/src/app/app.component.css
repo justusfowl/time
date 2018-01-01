@@ -2,11 +2,17 @@ html, body {
     height: 100vh;
    
   }
+
+#mainContainer{
+  padding-bottom: 40px;
+}
   
 .footer {
     bottom:20px;
     clear:both;
-    padding-top:20px;
+    background: white; 
+    width: 100%;
+    position: fixed;
   } 
 
 .primeContent{
@@ -17,6 +23,47 @@ html, body {
   padding-bottom: 30px; 
 
 }
+.loaderContainer{
+  position:absolute; 
+  height: 90vh;
+  margin-left: 2.5vw; 
+  width: 95vw; 
+  background-color: rgba(255, 255, 255, 0.58); 
+  z-index: 1000;
+}
+
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 3s linear infinite;
+  position: relative; 
+  left: 42vw; 
+  top: 40vh;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+.inputTime{
+  height: 34px; 
+  width: 100%; 
+}
+
+
+.subtitle{
+  color: #b9b9b9; 
+  font-size: 12px; 
+}
+
+
+
 
 /* RECORD */ 
 
@@ -58,7 +105,7 @@ html, body {
 
 .pageHeader{
   font-size: 55px; 
-  color: #b9b9b929; 
+  color: rgba(0, 0, 0, 0.13);
   text-align: right;
   padding-bottom: 20px; 
 }
@@ -67,6 +114,13 @@ html, body {
   padding-top: 15px; 
 }
 
+/* REQUEST */
+
+.reqSubtitle{
+  font-size: 14px; 
+  color: rgb(139, 139, 139);
+  text-align: left;  
+}
 
 /* SCHEDULER */
 
@@ -78,4 +132,12 @@ html, body {
 
 .slotSelected{
   background-color:red !important; 
+}
+
+/* LOGIN */
+
+.loginContainer{
+
+  padding-top: 40%;
+
 }

@@ -9,27 +9,48 @@ import { AuthenticationService } from 'app/_services/index';
 })
 export class AppComponent implements OnInit{
 
-  constructor (private router: Router, 
+  constructor (
+              private router: Router, 
               private authorizationService : AuthenticationService 
             ){
-
   }
-  title = 'app';
+
+  title = 'Time';
 
   username : any;
 
   ngOnInit(){
-      console.log("init")
+      console.log("init");
+
       $(".nav a").on("click", function(){
-        $(".nav").find(".active").removeClass("active");
-        $(this).parent().addClass("active");
-     });
+          $(".nav").find(".active").removeClass("active");
+          $(this).parent().addClass("active");
+      });
 
      this.username = this.authorizationService.getUsername();
+    
+  }
 
+  checkIfAuth(){
+    // return false if authenticated so that nav is not hidden
+    if (this.authorizationService.getUsername() != null){
+      return false; 
+    }else{
+      return true; 
+    }
+  }
+
+  checkIfAdmin(){
+    // return false if authenticated so that nav is not hidden
+    if (this.authorizationService.getIsAdmin()){
+      return false; 
+    }else{
+      return true; 
+    }
   }
 
   clickLogout(){
     this.authorizationService.logout();
+    this.router.navigate(["/login"]);
   }
 }

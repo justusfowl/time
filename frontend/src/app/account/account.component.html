@@ -16,13 +16,13 @@
 </div>
 <div class="row">
     <div class="col-md-3 accSubtitle">
-        Resturlaub in Stunden
+        Resturlaub in Stunden (aktuelles Kalenderjahr)
     </div>
     <div class="col-md-3 accSubtitle">
         geleistete Arbeitsstunden im aktuellen Monat
     </div>
     <div class="col-md-3 accSubtitle">
-        Planarbeitsstunden aktueller Monat
+        Planarbeitsstunden aktueller Monat per heute
     </div>
     <div class="col-md-3 accSubtitle">
         Balance ({{getYtdDisplay()}})
@@ -107,11 +107,12 @@
             <table class="table table-hover">
                     <thead>
                         <tr>
-                        <th scope="col">#</th>
                         <th scope="col">Tag</th>
-                        <th scope="col">Kommen</th>
-                        <th scope="col">Gehen</th>
                         <th scope="col">Arbeitszeit</th>
+                        <th scope="col">Krankheit</th>
+                        <th scope="col">Urlaub</th>
+                        <th scope="col">Feiertage</th>
+                        <th scope="col">Zeitausgleich</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -130,7 +131,7 @@
                             </tr>
                         </ng-container>
                         <tr (click)="handlePaginagingClick()">
-                            <th colspan="4"></th>
+                            <th colspan="5"></th>
                             <td>
                                 Mehr...
                             </td>
@@ -159,6 +160,7 @@
                                 <th scope="col">Uhrzeit</th>
                                 <th scope="col">Eintrag</th>
                                 <th scope="col">WorkflowId</th>
+                                <th scope="col">Aktion</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -183,10 +185,13 @@
                                             </p>
                                         </td>
                                         <td>{{row.requestid}}</td>
+                                        <td>
+                                                <button type="button" (click)="deleteRequest(row);" *ngIf="hideDeleteReqBtn(row)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                        </td>
                                     </tr>
                                 </ng-container>
                                 <tr (click)="handlePaginagingClick()">
-                                    <th colspan="3"></th>
+                                    <th colspan="4"></th>
                                     <td>
                                         Mehr...
                                     </td>

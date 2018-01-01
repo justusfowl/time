@@ -6,58 +6,58 @@
             <a  href="#1a" data-toggle="tab">Zeitreports</a>
         </li>
     </ul>
-        <div class="tab-content clearfix">
-            <div class="tab-pane active" id="1a">
-                    <div class="row">
-                        <div class="col-4">
-                            <form #myForm="ngForm" novalidate>
-                                <my-date-picker name="dateRefMonthReport" [options]="myDatePickerOptions" (dateChanged)="onDateChanged($event)" required></my-date-picker>
-                            </form>
-                        </div>
-                        <div class="col-4">
-                                Bericht per: {{dateRefMonthReport}}
-                        </div>
+    <div class="tab-content clearfix">
+        <div class="tab-pane active" id="1a">
+                <div class="row">
+                    <div class="col-4">
+                        <form #myForm="ngForm" novalidate>
+                            <my-date-picker name="dateRefMonthReport" [options]="myDatePickerOptions" (dateChanged)="onDateChanged($event)" required></my-date-picker>
+                        </form>
                     </div>
-                    <div class="row">
-                        <table class="table table-hover">
-                            <thead>
+                    <div class="col-4">
+                            Bericht per: {{dateRefMonthReport}}
+                    </div>
+                </div>
+                <div class="row">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">User</th>
+                                <th scope="col">Download</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let user of allUsers; let i=index" >
                                 <tr>
-                                    <th scope="col">User</th>
-                                    <th scope="col">Download</th>
+                                    <td>
+                                        {{user.username}}
+                                    </td>
+                                    <td>
+                                        <button type="button" (click)="onUserRowClick(user,1);" ><i class="fa fa-download" aria-hidden="true"></i></button>
+                                        <button type="button" (click)="onUserRowClick(user,2);" ><i class="fa fa-eye" aria-hidden="true"></i></button>  
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <ng-container *ngFor="let user of allUsers; let i=index" >
-                                    <tr>
-                                        <td>
-                                            {{user.username}}
-                                        </td>
-                                        <td>
-                                            <button type="button" (click)="onUserRowClick(user,1);" ><i class="fa fa-download" aria-hidden="true"></i></button>
-                                            <button type="button" (click)="onUserRowClick(user,2);" ><i class="fa fa-eye" aria-hidden="true"></i></button>  
-                                        </td>
-                                    </tr>
-                                </ng-container>
-                            </tbody>
-                        </table>      
+                            </ng-container>
+                        </tbody>
+                    </table>      
+                </div>
+        </div>
+        <div class="tab-pane" id="2a">
+                <div class="row">                                
+                    <div class="col-md-4 accSubtitle">
+                        Blank
                     </div>
-            </div>
+                                    
+                </div>
+        </div>
+        <div class="tab-pane" id="3a">
             <div class="tab-pane" id="2a">
-                    <div class="row">                                
-                        <div class="col-md-4 accSubtitle">
-                           Blank
-                        </div>
-                                      
-                    </div>
-            </div>
-            <div class="tab-pane" id="3a">
-                <div class="tab-pane" id="2a">
-                    <div class="row">
-                        <div class="col-md-4 accSubtitle">
-                            Blank
-                         </div>                   
-                    </div>
+                <div class="row">
+                    <div class="col-md-4 accSubtitle">
+                        Blank
+                        </div>                   
                 </div>
             </div>
         </div>
+    </div>
 </div>

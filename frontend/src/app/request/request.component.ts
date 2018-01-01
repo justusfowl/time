@@ -54,8 +54,10 @@ export class RequestComponent implements OnInit{
 
   ngOnInit(){
 
+    this.util.setNavOnRoute("request");
+
     $(".recordBtn").on("click", function(){
-        $(".recordBtnGroup").find(".active").removeClass("active");
+        $(".btn-group").find(".active").removeClass("active");
         $(this).addClass("active");
       });
 
@@ -80,7 +82,7 @@ export class RequestComponent implements OnInit{
           this.timeRequests = data;
       },
       error => {
-          console.log(error);
+        this.dataHandlingService.errorHandler(error);
       });
  
   }
@@ -95,7 +97,7 @@ export class RequestComponent implements OnInit{
           console.log(data); 
       },
       error => {
-          console.log(error);
+        this.dataHandlingService.errorHandler(error);
       });
 
   }
@@ -137,11 +139,9 @@ export class RequestComponent implements OnInit{
 
         this.getTimeRequests();
 
-        console.log(data);
-
       },
       error => {
-          console.log(error);
+        this.dataHandlingService.errorHandler(error);
       });
   }
 
@@ -155,39 +155,42 @@ export class RequestComponent implements OnInit{
     this.dataHandlingService.addVacRequest(body).subscribe(
         data => {
         this.getVacRequests();
-        console.log(data);
 
         },
         error => {
-            console.log(error);
+            this.dataHandlingService.errorHandler(error);
         });
     }
 
   getVacationValue(){
+    
+    if (parseInt(this.dateVacEnd.formatted.replace(/-/g,"")) > parseInt(this.dateVacStart.formatted.replace(/-/g,""))){
+    
+      var userId = this.authService.getUserId(); 
+      let params = {
+          "userid": userId, 
+          "sortBy": "refdate", 
+          "sortDir" : "DESC",
+          "dateVacStart": this.dateVacStart.formatted.replace(/-/g,""),
+          "dateVacEnd": this.dateVacEnd.formatted.replace(/-/g,"") 
+      };
 
-    var userId = this.authService.getUserId(); 
-    let params = {
-        "userid": userId, 
-        "sortBy": "refdate", 
-        "sortDir" : "DESC",
-        "dateVacStart": this.dateVacStart.formatted.replace(/-/g,""),
-        "dateVacEnd": this.dateVacEnd.formatted.replace(/-/g,"") 
-    };
+      this.dataHandlingService.getVacationValue(params).subscribe(
+        data => {
 
-    this.dataHandlingService.getVacationValue(params).subscribe(
-      data => {
+          this.vacValue = data.vacationValues; 
+          this.vacDays = data.vacationOverview;
 
-        console.log(data);
+          this.getTotalVacHrs();
 
-        this.vacValue = data.vacationValues; 
-        this.vacDays = data.vacationOverview;
+        },
+        error => {
+          this.dataHandlingService.errorHandler(error);
+        });
 
-        this.getTotalVacHrs();
-
-      },
-      error => {
-          console.log(error);
-      });
+    }else{
+      alert("Bitte Enddatum größer als Startdatum wählen")
+    }
 
   }
     
@@ -208,6 +211,11 @@ export class RequestComponent implements OnInit{
         alert("not ready, please select both start and end date.")
     }
    
+  }
+
+  showVacInfoModal(){
+
+    $('#modalVacRequestInfo').modal('show');
   }
 
   getTotalVacHrs(){

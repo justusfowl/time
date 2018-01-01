@@ -13,8 +13,6 @@ var mysqlInstance = function(){
     this.con = mysql.createConnection(this.databaseConfig)
 }
 
-
-
 mysqlInstance.prototype.addActualTime = function (input, cb) {
 
     var userid = input.userid; 
@@ -34,6 +32,17 @@ mysqlInstance.prototype.addActualTime = function (input, cb) {
 
 }
 
+mysqlInstance.prototype.deleteActualTime = function (input, cb) {
+    
+        var delactualtimeid = input.delactualtimeid; 
+
+        var sql = "DELETE FROM `time`.`tblactualtime`\
+        WHERE actualtimeid = "+delactualtimeid+";";
+    
+        this.con.query(sql, cb );
+    
+    }
+
 mysqlInstance.prototype.getUserInfo = function (input, cb ) {
     
     var filterStr = "" ;
@@ -44,14 +53,15 @@ mysqlInstance.prototype.getUserInfo = function (input, cb ) {
             filterStr = " WHERE users.username = '" + input.username + "'"
         }
 
+        if (typeof(input.userid) != "undefined"){
+            var userid = parseInt(input.userid);
+            filterStr = " WHERE times.userid = " + userid;
+        }else{
+            console.log("No userid defined within the request")
+        }
+
         if (!input.all) {
-            if (typeof(input.userid) != "undefined"){
-                var userid = parseInt(input.userid);
-                filterStr = " WHERE times.userid = " + userid;
-            }else{
-                console.log("No userid defined within the request")
-            }
-            
+            filterStr = ""; 
         }else{
             console.log("Requesting all users' info")
         }
@@ -65,26 +75,35 @@ mysqlInstance.prototype.getUserInfo = function (input, cb ) {
         users.username,\
         users.username as name,\
         users.userid,\
+        users.userroleid,\
+        users.usercategoryid,\
         users.userid as id,\
-        vacationdata.*,\
-        times.*\
+        vacationdata.validfrom,\
+        vacationdata.validto,\
+        vacationdata.vacationhrsperday,\
+        vacationdata.vacationcontractdays,\
+        vacationdata.vacationhrsvalueperday,\
+        times.usertimeid,\
+        times.validfrom,\
+        times.validto,\
+        times.timehrsperweek,\
+        times.timehrspermonth,\
+        times.timehrsperyear,\
+        times.usertimecomment\
         FROM\
         time.tblusers  as users\
         LEFT join (SELECT * FROM time.tbllookupusertimes where year(validto) > 2080) as times ON times.userid = users.userid\
         LEFT join (SELECT * FROM time.tblvacation where year(validto) > 2080) as vacationdata ON times.userid = vacationdata.userid\
         " + filterStr + ";"; 
 
-
-    console.log(sql);
-
     this.con.query(sql, cb );
 
 }
 
-mysqlInstance.prototype.getAuxtime = function (req, cb) {
+mysqlInstance.prototype.getAuxtime = function (input, cb) {
 
     var db = this; 
-    var userid = parseInt(req.query.userid);
+    var userid = parseInt(input.userid);
 
     var sql = "SELECT *,\
         (UNIX_TIMESTAMP(auxtimeto) - UNIX_TIMESTAMP(auxtimefrom))/60 as difference,\
@@ -93,7 +112,6 @@ mysqlInstance.prototype.getAuxtime = function (req, cb) {
         FROM time.tblauxtime\
         where userid = "+ userid + " and year(tblauxtime.auxtimeto) <= year(now());";
 
-    
     this.con.query(sql, cb );
 }
 
@@ -109,9 +127,9 @@ mysqlInstance.prototype.getRawBookings = function (req, cb) {
 }
 
 
-mysqlInstance.prototype.getContractVacationHrs = function (req, cb) {
+mysqlInstance.prototype.getContractVacationHrs = function (input, cb) {
 
-    var userid = parseInt(req.query.userid);
+    var userid = parseInt(input.userid);
 
     var sql = "SELECT\
     count(*) as cntDays,\
@@ -129,7 +147,7 @@ mysqlInstance.prototype.getContractVacationHrs = function (req, cb) {
         vacationtbl.validfrom < dates.date and\
         vacationtbl.validto > dates.date\
     ) as tbl\
-    where userid = "+ userid + "\
+    where userid = " + userid + "\
     group by vacationhrsperday, year(date), userid;"
 
     this.con.query(sql, cb );
@@ -181,10 +199,10 @@ mysqlInstance.prototype.getWorkingdays = function (input, cb, flagBeforeToday = 
 
 
 
-mysqlInstance.prototype.getNumberWorkingdays = function (req, cb) {
+mysqlInstance.prototype.getNumberWorkingdays = function (input, cb) {
 
     var db = this; 
-    var userid = parseInt(req.query.userid);
+    var userid = parseInt(input.userid);
     
     var sql = "SELECT\
     count(date) as noWorkingDays,\
@@ -214,7 +232,7 @@ mysqlInstance.prototype.getNumberWorkingdays = function (req, cb) {
             AND replace(left(lookupdates.date, 7),'-','') <= replace(left(contractualTbl.validto, 7),'-','')\
         where\
         dayofweek(lookupdates.date) >= 2 and dayofweek(lookupdates.date) <= 6 and\
-        month(lookupdates.date) <= month(now()) and year(lookupdates.date) <= year(now()) \
+        (lookupdates.date) <= now()  \
     ) as d\
     where userid = "+ userid + "\
     GROUP BY\
@@ -222,7 +240,7 @@ mysqlInstance.prototype.getNumberWorkingdays = function (req, cb) {
     month,\
     year;\
     "
-    
+
     this.con.query(sql, cb );
 
 }
@@ -285,53 +303,60 @@ mysqlInstance.prototype.getTimePairs = function (input, cb) {
         var resultCome = data.resultCome;
         var resultGo = data.resultGo; 
 
+        // for all come-items find corresponding go-items
         var iterateResultCome = function(item){
 
-        var comeItem = {
-            cometimeid : item.actualtimeid , 
-            cometime: item.actualtime, 
-            userid : item.userid
-            
-        }; 
+            var comeItem = {
+                cometimeid : item.actualtimeid , 
+                cometime: item.actualtime, 
+                userid : item.userid
+            }; 
 
-        var resGoItem = _.filter(resultGo, function(goItem){
-            return goItem.actualtime > comeItem.cometime && 
-            goItem.actualtime.getUTCDate() == comeItem.cometime.getUTCDate() && 
-            goItem.actualtime.getMonth() == comeItem.cometime.getMonth() && 
-            goItem.actualtime.getFullYear() == comeItem.cometime.getFullYear()
-        })
+            var resGoItem = _.filter(resultGo, function(goItem){
+                return goItem.actualtime > comeItem.cometime && 
+                goItem.actualtime.getUTCDate() == comeItem.cometime.getUTCDate() && 
+                goItem.actualtime.getMonth() == comeItem.cometime.getMonth() && 
+                goItem.actualtime.getFullYear() == comeItem.cometime.getFullYear()
+            });
 
-        if (resGoItem.length > 0 ){
-            comeItem.gotime = resGoItem[0].actualtime
-            comeItem.gotimeid = resGoItem[0].actualtimeid
-        }else{
-            comeItem.gotime = undefined;
-            comeItem.gotimeid = undefined;
-        }
-        overallResult.push(comeItem)
-        }
+            if (resGoItem.length > 0 ){
+
+                comeItem.gotime = resGoItem[0].actualtime
+                comeItem.gotimeid = resGoItem[0].actualtimeid
+
+                // remove item from resultGo so that entries cannot be used twice
+                resultGo.splice(resultGo.indexOf(resGoItem[0]), 1);
+            }else{
+                comeItem.gotime = undefined;
+                comeItem.gotimeid = undefined;
+            }
+
+            overallResult.push(comeItem)
+        };
 
         _(resultCome).forEach(iterateResultCome);
 
+        // for all go-items there would have to have been come-items matched already
+        // if not, then add them as single items, missing corresponding "comes"
         var iterateResultGo = function(item){
-        var goItem = item; 
+            var goItem = item; 
 
-        var resGoItem = _.filter(overallResult, function(item){
-            return item.gotime == goItem.actualtime
-        })
+            var resGoItem = _.filter(overallResult, function(item){
+                return item.gotime == goItem.actualtime
+            })
 
-        if (resGoItem.length == 0 ){
-            // if gotime is missing a corresponding cometime
-            var gotimeItem = {
-                cometimeid : undefined , 
-                cometime: undefined, 
-                gotime: item.actualtime, 
-                gotimeid : item.actualtimeid,
-                userid : item.userid
-                
-            }; 
-            overallResult.push(gotimeItem)
-        }
+            if (resGoItem.length == 0 ){
+                // if gotime is missing a corresponding cometime
+                var gotimeItem = {
+                    cometimeid : undefined , 
+                    cometime: undefined, 
+                    gotime: item.actualtime, 
+                    gotimeid : item.actualtimeid,
+                    userid : item.userid
+                    
+                }; 
+                overallResult.push(gotimeItem)
+            }
 
         }
 
@@ -367,10 +392,6 @@ mysqlInstance.prototype.getTimePairs = function (input, cb) {
 
 }
 
-
-
-
-
 // REQUESTS AREA
 
 
@@ -401,6 +422,7 @@ mysqlInstance.prototype.getTimeRequests = function (input, cb) {
             requests.userid,\
             users.username,\
             requestcatid,\
+            delactualtimeid,\
             replace(addtimedate,'-','') as refdate\
             FROM time.tblrequestqueueaddtime as requests\
             inner join (select username, userid from time.tblusers) as users on users.userid = requests.userid\
@@ -430,8 +452,6 @@ mysqlInstance.prototype.getVacRequests = function (input, cb) {
         var sql = "SELECT *, replace(left(requesttimestart,10),'-','') as refdate\
         FROM time.tblrequestqueuevac " + whereStr + " ;";
 
-        console.log(sql);
-
         this.con.query(sql, cb);
 }
 
@@ -451,7 +471,6 @@ mysqlInstance.prototype.addRequest = function (req, cb) {
         }else{
             return false; 
         }
-
     }
 
     function retAddTimeSqlStr(directionid, userid, addtimedate, addtime, requestcatid, delactualtimeid  ){
@@ -461,9 +480,7 @@ mysqlInstance.prototype.addRequest = function (req, cb) {
             }else{
                 var value = "(" + directionid + ",'" + addtimedate + "','" + addtime + "'," + userid + "," + requestcatid + "," + delactualtimeid + ")"
             }
-
             return value; 
-        
         }
 
     if (requestcatid == 1){
@@ -490,6 +507,25 @@ mysqlInstance.prototype.addRequest = function (req, cb) {
 
     }else if (requestcatid == 2){
 
+        var dateDel = req.body.actualtime.substring(0,10);
+        var timeDel = req.body.actualtime.substring(11,req.body.actualtime.length-5);
+        var directionId = req.body.directionId;
+        var actualtimeid = req.body.actualtimeid; 
+
+        console.log("Delete request for item created: " + actualtimeid)
+
+        var sql = "INSERT INTO `time`.`tblrequestqueueaddtime`\
+        (`directionid`,\
+        `addtimedate`,\
+        `addtime`,\
+        `userid`,\
+        `requestcatid`,\
+        `delactualtimeid`)\
+        VALUES "
+
+        var addTime = retAddTimeSqlStr(directionId, userid, dateDel, timeDel, 2, actualtimeid);
+
+        this.con.query(sql + addTime + ";", cb );
     }
     else if (requestcatid == 3){
 

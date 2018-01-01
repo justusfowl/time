@@ -29,17 +29,17 @@ import { AuthGuard } from './_guards/index';
 
 const appRoutes: Routes = [
   { path: '', component: RecordComponent, canActivate: [AuthGuard]},
-  { path: 'record', component: RecordComponent},
-  { path: 'request', component: RequestComponent},
-  { path: 'scheduler', component: SchedulerComponent},
-  { path: 'statistics', component: StatComponent},
-  { path: 'admin', component: AdminComponent},
+  { path: 'record', component: RecordComponent, canActivate: [AuthGuard]},
+  { path: 'request', component: RequestComponent, canActivate: [AuthGuard]},
+  { path: 'scheduler', component: SchedulerComponent, canActivate: [AuthGuard]},
+  { path: 'statistics', component: StatComponent, canActivate: [AuthGuard]},
+  { path: 'admin', component: AdminComponent, canActivate: [AuthGuard]},
+  { path: 'account', component: AccountComponent, canActivate: [AuthGuard]},
+  
   { path: 'login', component: LoginComponent},
-  { path: 'account', component: AccountComponent},
-
   { path: '**', component: PageNotFoundComponent}
 ];
-
+ 
 //enableProdMode();
 
 @NgModule({

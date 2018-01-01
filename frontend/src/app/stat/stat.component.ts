@@ -35,8 +35,9 @@ export class StatComponent implements OnInit{
 
 
     ngOnInit(){
-         
 
+        this.util.setNavOnRoute("statistics");
+         
         this.getUserInfo();
 
         let d: Date = new Date();
@@ -76,6 +77,9 @@ export class StatComponent implements OnInit{
                     var fileURL = URL.createObjectURL(res);
                     window.open(fileURL); 
                 }
+            },
+            error => {
+              this.dataHandlingService.errorHandler(error);
             }
         );
     }

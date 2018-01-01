@@ -39,6 +39,8 @@ export class AdminComponent implements OnInit{
 
     ngOnInit(){
 
+        this.util.setNavOnRoute("admin");
+
         this.getUserInfo();
         this.getTimeRequests();
         this.getVacRequests();
@@ -55,14 +57,13 @@ export class AdminComponent implements OnInit{
             console.log(data);
             },
             error => {
-                console.log(error);
+                this.dataHandlingService.errorHandler(error);
             });
     }
 
     getTimeRequests(){
 
         var filterArr = [this.dataHandlingService.filterItem("requeststatus", "eq", this.filterStatus)];
-
 
         var userId = this.authService.getUserId(); 
         let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", filters: filterArr, "all": true};
@@ -72,7 +73,7 @@ export class AdminComponent implements OnInit{
               this.timeRequests = data;
           },
           error => {
-              console.log(error);
+            this.dataHandlingService.errorHandler(error);
           });
      
       }
@@ -85,11 +86,10 @@ export class AdminComponent implements OnInit{
     
         this.dataHandlingService.getVacRequests(params).subscribe(
           data => {
-              this.vacRequests = data;
-              console.log(data); 
+              this.vacRequests = data; 
           },
           error => {
-              console.log(error);
+                this.dataHandlingService.errorHandler(error);
           });
     
       }
@@ -99,11 +99,10 @@ export class AdminComponent implements OnInit{
         var body = {"requestId" : row.requestid};
         this.dataHandlingService.approveRequest(body).subscribe(
             data => {
-                console.log(data);
                 this.getTimeRequests();
             },
             error => {
-                console.log(error);
+                this.dataHandlingService.errorHandler(error);
             });
 
     }
@@ -113,11 +112,10 @@ export class AdminComponent implements OnInit{
             var body = {"requestId" : row.requestid};
             this.dataHandlingService.rejectRequest(body).subscribe(
                 data => {
-                    console.log(data);
                     this.getTimeRequests();
                 },
                 error => {
-                    console.log(error);
+                    this.dataHandlingService.errorHandler(error);
                 });
         } 
     }
@@ -127,11 +125,10 @@ export class AdminComponent implements OnInit{
             var body = {"requestId" : row.requestid};
             this.dataHandlingService.rejectVacRequest(body).subscribe(
                 data => {
-                    console.log(data);
                     this.getVacRequests();
                 },
                 error => {
-                    console.log(error);
+                    this.dataHandlingService.errorHandler(error);
                 });
         } 
     }
@@ -140,11 +137,10 @@ export class AdminComponent implements OnInit{
         var body = {"requestId" : row.requestid};
         this.dataHandlingService.approveVacRequest(body).subscribe(
             data => {
-                console.log(data);
                 this.getVacRequests();
             },
             error => {
-                console.log(error);
+                this.dataHandlingService.errorHandler(error);
             });
     }
 

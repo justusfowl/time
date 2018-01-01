@@ -63,15 +63,14 @@ export class SchedulerComponent implements OnInit{
 
   ngOnInit(){
 
+    this.util.setNavOnRoute("scheduler");
+
     this.getUserInfo();
     this.selectDelete = false;
 
     this.selectedMode = 1;
 
-    
-    var isAdmin = this.authService.getIsAdmin() == 'true';
-
-    this.isAdmin = isAdmin;
+    this.isAdmin = this.authService.getIsAdmin();
     
     this.calendarOptions = {
       fixedWeekCount : false,
@@ -92,7 +91,7 @@ export class SchedulerComponent implements OnInit{
       mintime: "05:00:00",
       slotDuration: "00:15:00",
       defaultDate: (new Date()).toISOString().substring(0,10),
-      editable: isAdmin,
+      editable: this.isAdmin,
       eventLimit: true, // allow "more" link when too many events
       dayClick: this.handleCalenderClicked.bind(this),
       events: this.getPlantime.bind(this), 
@@ -104,7 +103,6 @@ export class SchedulerComponent implements OnInit{
   }
 
   handleModalAccept(){
-
     if (this.planDate != null && this.planTimeStart != null && this.planTimeEnd != null){
           this.addPlantime();
           $('#modalAddSlot').modal('hide');
@@ -116,9 +114,7 @@ export class SchedulerComponent implements OnInit{
   handleCalenderClicked(date, jsEvent, view) {
 
     $('#modalAddSlot').modal('show');
-
     var dateFormatted = date.format(); 
-
     this.planDate = dateFormatted.substring(0,10);
     this.planTimeStart = dateFormatted.substring(dateFormatted.indexOf("T")+1,dateFormatted.length);
 
@@ -136,28 +132,17 @@ export class SchedulerComponent implements OnInit{
   setMode(){
 
     if (this.selectedMode == 1){
-
-
       $('.filter').removeClass("hide");
-
-
       this.myCalendar.fullCalendar("refetchEvents");
 
     }else if (this.selectedMode == 2){
-
       $('.filter').addClass("hide");
-      
-
-
       if (this.selectedUser != null || typeof(this.selectedUser) == "undefined"){
         this.myCalendar.fullCalendar("refetchEvents");
       }
-
     }else {
       console.log("Invalid mode")
     }
-
-
   }
 
   handleUserCompareSelect(event){
@@ -169,43 +154,31 @@ export class SchedulerComponent implements OnInit{
   }
 
   onChange() {
-
       var component = this;
-
       this.filters.length = 0;
-
       this.optionsModel.forEach(function(item){
         component.filters.push(component.dataHandlingService.filterItem("userid", "eq", item));
       });
-
       this.myCalendar.fullCalendar("refetchEvents");
-
   }
 
   
   eventClick(event, jsEvent, view){
-
     // allow item clicking only for future events and within mode = 1 for planning purposes
     if (event.end > new Date() && this.selectedMode == 1){
-
       $(".deleteItem").toggleClass("hide");
-
       this.selectId = event.id; 
       var itemSelected = $(jsEvent.target).parent();
-
       $(jsEvent.target).parent().addClass('slotSelected');
-
     }else{
       console.log("Deleting of items can only be done for future events.");
     }
   }
 
   addPlantime(){
-
     var body = {"userid" : this.selectedUser.userid}
     body["plantimeStart"] = this.planDate + " " + this.planTimeStart;
     body["plantimeEnd"] = this.planDate + " " + this.planTimeEnd;
-
     this.dataHandlingService.addPlantime(body).subscribe(
         data => {
           this.planDate = null; 
@@ -214,7 +187,7 @@ export class SchedulerComponent implements OnInit{
           this.myCalendar.fullCalendar("refetchEvents");
         },
         error => {
-          console.log(error);
+          this.dataHandlingService.errorHandler(error);
         });
 
   }
@@ -222,20 +195,17 @@ export class SchedulerComponent implements OnInit{
   getPlantime(start, end, timezone, callback){
 
       if (this.selectedMode == 1){
-
-      
-      var userId = this.authService.getUserId(); 
-      let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", "startDate": start.format().substring(0,10) , 
-      "endDate": end.format().substring(0,10), filters: this.filters};
-  
-      this.dataHandlingService.getPlantime(params).subscribe(
-        data => {
-            callback(data);
-        },
-        error => {
-            console.log(error);
-        });
-
+        var userId = this.authService.getUserId(); 
+        let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", "startDate": start.format().substring(0,10) , 
+        "endDate": end.format().substring(0,10), filters: this.filters};
+    
+        this.dataHandlingService.getPlantime(params).subscribe(
+          data => {
+              callback(data);
+          },
+          error => {
+              this.dataHandlingService.errorHandler(error);
+          });
       }
       else if (this.selectedMode == 2){
 
@@ -246,7 +216,7 @@ export class SchedulerComponent implements OnInit{
             callback(data);
           },
           error => {
-              console.log(error);
+            this.dataHandlingService.errorHandler(error);
           });
       }
   };
@@ -266,9 +236,8 @@ export class SchedulerComponent implements OnInit{
           return;
         },
         error => {
-          console.log(error);
+          this.dataHandlingService.errorHandler(error);
         });
-    console.log(planTimeStart);
   }
 
   deletePlantime(planTimeId){
@@ -279,21 +248,19 @@ export class SchedulerComponent implements OnInit{
           this.myCalendar.fullCalendar("refetchEvents");
         },
         error => {
-          console.log(error);
+          this.dataHandlingService.errorHandler(error);
         });
   }
 
   getUserInfo(){
-
     var userId = this.authService.getUserId(); 
     let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", "all" : true};
-
     this.dataHandlingService.getUserInfo(params).subscribe(
       data => {
         this.allUsers = data; 
       },
       error => {
-          console.log(error);
+        this.dataHandlingService.errorHandler(error);
       });
   }
 

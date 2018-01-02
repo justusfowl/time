@@ -13,8 +13,10 @@ export class DataHandlingService {
         private http: Http, 
         private util: UtilService
     ) { }
-
-    BaseURL = "http://localhost:3000";
+    
+    // dev URL
+    // BaseURL = "http://localhost:3000";
+    BaseURL = "";
     APIUrl = "/api/v01/";
 
     // example:

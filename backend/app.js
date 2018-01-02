@@ -1,33 +1,13 @@
-var config = require('./config');
+var mysql = require('mysql');
 
-var express = require('express');
-
-var app = express(); 
-
-global.__root   = __dirname + '/';  
-
-app.use(function(req, res, next) {
-  
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
-  res.setHeader("Access-Control-Allow-Headers", 'Origin, x-access-token,Authorization,  X-Requested-With, Content-Type, Accept');
-  
-  next();
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "",
+  password: ""
 });
 
-app.get('/api', function (req, res) {
-  res.status(200).send('API works.'); 
-  console.log("api");
+con.connect(function(err) {
+  if (err) throw err;  
+  
+  console.log("Blupp Connected!");
 });
-
-var AuthController = require(__root + 'auth/AuthController');
-app.use('/api/auth', AuthController);
-
-// time API
-var timeAPI = require(__root + 'v01/time');
-app.use('/api/v01/time', timeAPI);
-
-
-   
-
-module.exports = app;

@@ -1,0 +1,143 @@
+html, body {
+    height: 100vh;
+   
+  }
+
+#mainContainer{
+  padding-bottom: 40px;
+}
+  
+.footer {
+    bottom:20px;
+    clear:both;
+    background: white; 
+    width: 100%;
+    position: fixed;
+  } 
+
+.primeContent{
+  padding-top: 30px; 
+}
+
+.paddingBottom{
+  padding-bottom: 30px; 
+
+}
+.loaderContainer{
+  position:absolute; 
+  height: 90vh;
+  margin-left: 2.5vw; 
+  width: 95vw; 
+  background-color: rgba(255, 255, 255, 0.58); 
+  z-index: 1000;
+}
+
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 3s linear infinite;
+  position: relative; 
+  left: 42vw; 
+  top: 40vh;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+.inputTime{
+  height: 34px; 
+  width: 100%; 
+}
+
+
+.subtitle{
+  color: #b9b9b9; 
+  font-size: 12px; 
+}
+
+
+
+
+/* RECORD */ 
+
+
+.recordBtnGroup{
+  width: 100%; 
+  padding-top: 10px; 
+  padding-bottom: 4px; 
+}
+
+.recordBtn{
+  width: 50% !important; 
+  padding-top: 10px; 
+}
+
+.recordBtn.active{
+  background-color: #6a7279;
+  color: white; 
+}
+
+.subfigure{
+  color: #b9b9b9; 
+  font-size: 10px; 
+}
+
+
+
+/* ACCOUNT */
+.accSubtitle{
+  font-size: 14px; 
+  color: rgb(139, 139, 139);
+  text-align: center;  
+}
+
+.accKeyFigure{
+  font-size: 30px; 
+  text-align: center; 
+}
+
+.pageHeader{
+  font-size: 55px; 
+  color: rgba(0, 0, 0, 0.13);
+  text-align: right;
+  padding-bottom: 20px; 
+}
+
+.tab-content{
+  padding-top: 15px; 
+}
+
+/* REQUEST */
+
+.reqSubtitle{
+  font-size: 14px; 
+  color: rgb(139, 139, 139);
+  text-align: left;  
+}
+
+/* SCHEDULER */
+
+.inputTime{
+  width: 100%; 
+  text-align: right; 
+
+}
+
+.slotSelected{
+  background-color:red !important; 
+}
+
+/* LOGIN */
+
+.loginContainer{
+
+  padding-top: 40%;
+
+}

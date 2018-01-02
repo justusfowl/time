@@ -60,9 +60,8 @@ mysqlInstance.prototype.getUserInfo = function (input, cb ) {
             console.log("No userid defined within the request")
         }
 
-        if (!input.all) {
-            filterStr = ""; 
-        }else{
+        if (input.all) {
+            filterStr = "";
             console.log("Requesting all users' info")
         }
         

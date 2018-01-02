@@ -5,7 +5,7 @@ var jsreport = require('jsreport');
 
 var fs = require('fs');
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 80;
 
 const root_path = path.resolve("..");
 

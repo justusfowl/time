@@ -23,24 +23,38 @@ router.post('/login', function(req, res) {
   console.log("login triggered");
   console.log("login of: " + req.body.username);
 
-  var user = req.body.username;
+  // user = domain user for authentication
+  var domUser = req.body.username;
+
+  // user = username within application
+  var user;
+
   var pw = req.body.password;
 
-  /*
-  if (user.indexOf('@') == -1){
-    user = user + "@" + config.AD.baseDNLogin;
+  if (domUser.indexOf('\\') != -1){
+    // either log on with slash then application user has to be trimmed
+    user = domUser.substring(domUser.indexOf('\\') + 1, domUser.length);
+    
+  }else if (domUser.indexOf('@') != -1){
+    // either log on with @ then application user has to be trimmed
+    user = domUser.substring(0, domUser.indexOf('@'));
+  }else{
+    user = domUser;
+    domUser = domUser + "@" + config.AD.baseDNLogin;
   }
-  */
 
-  if (typeof(user) == "undefined" || typeof(pw) == "undefined" ){
+  console.log("domainUser:" + domUser);
+  console.log("appUser:" + user);
+
+  if (typeof(domUser) == "undefined" || typeof(pw) == "undefined" ){
     res.status(401).send({ auth: false, token: null });
     return 
   }
 
-  console.log("login of: " + user);
+  console.log("login of: " + domUser);
   
   try{
-    var ad = new ActiveDirectory({ url: config.AD.url , baseDN: config.AD.baseDN, username : user, password: pw});
+    var ad = new ActiveDirectory({ url: config.AD.url , baseDN: config.AD.baseDN, username : domUser, password: pw});
   }
   catch(err){
     res.status(401).send({ auth: false, token: null });
@@ -49,7 +63,7 @@ router.post('/login', function(req, res) {
 
   var authenticate = function() {
       var promise = new Promise(function(resolve, reject){
-        ad.authenticate(user, pw, function(err, auth) {
+        ad.authenticate(domUser, pw, function(err, auth) {
             if (auth) {
               console.log('Authenticated!');
               resolve({"auth": auth, "username": user});
@@ -68,7 +82,7 @@ router.post('/login', function(req, res) {
   var isInUserGroup = function(data) {
 
     var promise = new Promise(function(resolve, reject){
-      ad.isUserMemberOf(user, config.AD.usergroup, function(err, isMember) {
+      ad.isUserMemberOf(domUser, config.AD.usergroup, function(err, isMember) {
         if (err) {
           console.log('ERROR: ' + JSON.stringify(err));
           return;
@@ -83,7 +97,7 @@ router.post('/login', function(req, res) {
   var isInAdminGroup = function(data) {
 
     var promise = new Promise(function(resolve, reject){
-      ad.isUserMemberOf(user, config.AD.admingroup, function(err, isMember) {
+      ad.isUserMemberOf(domUser, config.AD.admingroup, function(err, isMember) {
         if (err) {
           console.log('ERROR: ' +JSON.stringify(err));
           return;

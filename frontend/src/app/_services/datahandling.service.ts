@@ -7,7 +7,7 @@ import 'rxjs/add/operator/map'
 import { UtilService } from '../_services/util.service';
 
 @Injectable()
-export class DataHandlingService {
+export class DataHandlingService { 
     constructor(
         private router: Router,
         private http: Http, 
@@ -16,7 +16,7 @@ export class DataHandlingService {
     
     // dev URL
     // BaseURL = "http://localhost:3000";
-    BaseURL = "";
+    BaseURL = "http://localhost:3000";
     APIUrl = "/api/v01/";
 
     // example:

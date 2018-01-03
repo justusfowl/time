@@ -1,0 +1,190 @@
+
+
+
+<div class="pageHeader">Admin</div>
+
+<div id="exTab1" class="container">	
+    <ul  class="nav nav-pills">
+        <li class="active">
+            <a  href="#1a" data-toggle="tab">Anträge</a>
+        </li>
+        <li>
+            <a href="#2a" data-toggle="tab">Stammdaten</a>
+        </li>
+    </ul>
+        <div class="tab-content clearfix">
+                <div class="tab-pane active" id="1a">
+                    <div class="panel-group">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                <h4 class="panel-title">
+                                <a data-toggle="collapse" data-target="#collapseOne">
+                                    <i class="fa fa-user-times" aria-hidden="true"></i>
+                                    Zeitnachträge
+                                </a>                            
+                                </h4>
+                                <select (change)="handleStatusSelect($event);" class="selectpicker dropdown-toggle btn btn-default btn-secondary">
+                                        <option value="0" selected>Offen</option>
+                                        <option value="1">Genehmigt</option>
+                                        <option value="2">Abgelehnt</option>
+                                    </select>
+                            </div>
+                            <div id="collapseOne" class="panel-collapse collapse in">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                            <th scope="col">Datum</th>
+                                            <th scope="col">Art</th>
+                                            <th scope="col">Datum (genau)</th>
+                                            <th scope="col">Benutzer</th>
+                                            <th scope="col">Kategorie</th>
+                                            <th scope="col">Löschziel</th>
+                                            <th scope="col">Bearbeitungsstatus</th>
+                                            <th scope="col">Aktion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ng-container *ngFor="let row of timeRequests; let i=index">
+                                                <tr *ngIf="i<topEntries">
+                                                    <th scope="row">{{formatter.formatRefDate(row.refdate)}}
+                                                        <p class="subfigure">
+                                                                {{row.requestid}}
+                                                        </p>
+                                                    </th>
+                                                    <td>{{formatter.formatReqCatId(row.requestcatid)}}</td>
+                                                    <td>{{row.detailaddtime}}</td>
+                                                    <td>{{row.username}}</td>
+                                                    <td>
+                                                        <div *ngIf="row.directionid == 1; else elseBlock">Kommen</div>
+                                                        <ng-template #elseBlock>Gehen</ng-template> 
+                                                    </td>
+                                                    <td>{{row.delactualtimeid}}</td>
+                                                    <td>{{formatter.formatReqStatusId(row.requeststatus)}}
+                                                        <p class="subfigure">
+                                                            {{row.requeststatuschange}}
+                                                        </p>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" (click)="approveRequest(row);" [disabled]="!enableAction(row)"><i class="fa fa-thumbs-o-up" aria-hidden="true"></i></button>
+                                                        <button type="button" (click)="rejectRequest(row);" [disabled]="!enableAction(row)"><i class="fa fa-times-circle" aria-hidden="true"></i></button>  
+                                                    </td>
+                                                </tr>
+                                            </ng-container>
+                                            <tr (click)="handlePaginagingClick()">
+                                                <th colspan="6"></th>
+                                                <td>
+                                                    Mehr...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                        </div>
+                    
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                    <h4 class="panel-title">
+                            <a data-toggle="collapse" data-target="#collapseTwo" 
+                                class="collapsed">
+                                <i class="fa fa-sun-o" aria-hidden="true"></i>
+                                Urlaubsanfragen
+                            </a>
+                            </h4>
+                            <select (change)="handleVacStatusSelect($event);" class="selectpicker dropdown-toggle btn btn-default btn-secondary">
+                                    <option value="0" selected>Offen</option>
+                                    <option value="1">Genehmigt</option>
+                                    <option value="2">Abgelehnt</option>
+                                </select>
+                            </div>
+                            <div id="collapseTwo" class="panel-collapse collapse in">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Start</th>
+                                        <th scope="col">Ende</th>
+                                        <th scope="col">Bearbeitungsstatus</th>
+                                        <th scope="col">Aktion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ng-container *ngFor="let row of vacRequests; let i=index">
+                                            <tr *ngIf="i<topEntries">
+                                                <th scope="row">{{row.requestid}}
+                                                </th>
+                                                <td>{{row.requesttimestart}}</td>
+                                                <td>{{row.requesttimeto}}</td>
+                                                <td>{{formatter.formatReqStatusId(row.requeststatus)}}
+                                                    <p class="subfigure">
+                                                        {{row.requeststatuschange}}
+                                                    </p>
+                                                </td>
+                                                <td>
+                                                    <button type="button" (click)="approveVacRequest(row);" [disabled]="!enableAction(row)" ><i class="fa fa-thumbs-o-up" aria-hidden="true"></i></button>
+                                                    <button type="button" (click)="rejectVacRequest(row);"[disabled]="!enableAction(row)"  ><i class="fa fa-times-circle" aria-hidden="true"></i></button>
+                                                </td>
+                                            </tr>
+                                        </ng-container>
+                                        <tr (click)="handlePaginagingClick()">
+                                            <th colspan="4"></th>
+                                            <td>
+                                                Mehr...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <div class="tab-pane" id="2a">
+                <div class="panel-group" id="accordion">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                        <a data-toggle="collapse" data-target="#collapseOne">
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                        Benutzer
+                        </a>
+                    </h4>
+                
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse in">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Nutzername</th>
+                                        <th scope="col">Kategorie</th>
+                                        <th scope="col">Rolle</th>
+                                        <th scope="col">Wochenarbeit(h)</th>
+                                        <th scope="col">Urlaubsanspruch</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngFor="let user of allUsers; let i=index">
+                                        <tr>
+                                            <th scope="row">{{user.username}}
+                                                <p class="subfigure">
+                                                    userid: {{user.userid}}
+                                                </p>
+                                            </th>
+                                            <td>{{user.usercategoryid}}</td>
+                                            <td>{{user.userroleid}}</td>
+                                            <td>{{user.timehrsperweek}}</td>
+                                            <td>{{user.vacationhrsperday}} Std / {{user.vacationcontractdays}} Tage
+                                                <p class="subfigure">
+                                                    vacid: {{user.vacationid}}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+        </div>
+</div>

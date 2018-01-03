@@ -1,0 +1,203 @@
+<div class="pageHeader">Arbeitszeitkonto</div>
+
+<div class="row">
+    <div class="col-md-3 accKeyFigure">
+        {{vacHoursRemaining}}
+    </div>
+    <div class="col-md-3 accKeyFigure">
+            {{formatter.formatNumberDecimals(hrsWorkedThisMonth,2)}}
+    </div>
+    <div class="col-md-3 accKeyFigure">
+            {{formatter.formatNumberDecimals(timehrsPerMonthThisMonth,2)}}
+    </div>
+    <div class="col-md-3 accKeyFigure">
+            {{calculateTotalBalance()}}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-3 accSubtitle">
+        Resturlaub in Stunden (aktuelles Kalenderjahr)
+    </div>
+    <div class="col-md-3 accSubtitle">
+        geleistete Arbeitsstunden im aktuellen Monat
+    </div>
+    <div class="col-md-3 accSubtitle">
+        Planarbeitsstunden aktueller Monat per heute
+    </div>
+    <div class="col-md-3 accSubtitle">
+        Balance ({{getYtdDisplay()}})
+    </div>
+</div>
+
+<div class="container primeContent">
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                 <h4 class="panel-title">
+            <a data-toggle="collapse" data-target="#collapseOne">
+               <i class="fa fa-balance-scale" aria-hidden="true"></i>
+               Saldenübersicht
+            </a>
+          </h4>
+    
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Monat</th>
+                            <th scope="col">Arbeitszeit</th>
+                            <th scope="col">Zusatzzeit</th>
+                            <th scope="col">Sollzeit</th>
+                            <th scope="col">Kontostand</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let row of balance; let i=index">
+                            <tr *ngIf="i<topEntries">
+                                <th scope="row">{{formatter.formatRefMonth(row.refmonth)}}</th>
+                                <td>{{formatter.formatNumberDecimals(row.hrsWorked,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.auxHrs,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.timehrspermonth,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.balance,2)}}</td>
+                            </tr>
+                        </ng-container>
+                        <tr (click)="handlePaginagingClick()">
+                            <th colspan="4"></th>
+                            <td>
+                                Mehr...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+                <h4 class="panel-title">
+        <a data-toggle="collapse" data-target="#collapseTwo" 
+            class="collapsed">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+            Tagesgebaue Buchungsübersicht in Stunden
+        </a>
+        </h4>
+
+        </div>
+        <div id="collapseTwo" class="panel-collapse collapse">
+            <div class="row">
+                <div class="col-md-1 accSubtitle">
+                    von:
+                </div>
+                <div class="col-md-4 accSubtitle">
+                        <form #myForm="ngForm" novalidate>
+                            <my-date-picker name="filterRefDateFrom" [options]="myDatePickerOptions" (dateChanged)="onDateChanged($event, 'from')" [(ngModel)]="refDateFrom" required></my-date-picker>
+                        </form>
+                </div>
+                <div class="col-md-1 accSubtitle">
+                    bis:
+                </div>
+                <div class="col-md-4 accSubtitle">
+                        <form #myForm="ngForm" novalidate>
+                            <my-date-picker name="filterRefDateTo" [options]="myDatePickerOptions" (dateChanged)="onDateChanged($event, 'to')" [(ngModel)]="refDateTo" required></my-date-picker>
+                        </form>
+                </div>
+            </div>        
+           
+            <table class="table table-hover">
+                    <thead>
+                        <tr>
+                        <th scope="col">Tag</th>
+                        <th scope="col">Arbeitszeit</th>
+                        <th scope="col">Krankheit</th>
+                        <th scope="col">Urlaub</th>
+                        <th scope="col">Feiertage</th>
+                        <th scope="col">Zeitausgleich</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let row of filteredDayBookings; let i=index">
+                            <tr *ngIf="i<topEntries">
+                                <th scope="row">{{formatter.formatRefDate(row.refdate)}}
+                                    <p class="subfigure">
+                                            {{row.day}}
+                                    </p>
+                                </th>
+                                <td>{{formatter.formatNumberDecimals(row.hrsWorked,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.sickness,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.vacation,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.holidaytime,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.auxAddTime,2)}}</td>
+                            </tr>
+                        </ng-container>
+                        <tr (click)="handlePaginagingClick()">
+                            <th colspan="5"></th>
+                            <td>
+                                Mehr...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+            <div class="panel-heading">
+                    <h4 class="panel-title">
+            <a data-toggle="collapse" data-target="#collapseThree" 
+                class="collapsed">
+                <i class="fa fa-bath" aria-hidden="true"></i>
+                Einzelbuchungen
+            </a>
+            </h4>
+
+            </div>
+            <div id="collapseThree" class="panel-collapse collapse">
+                    <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                <th scope="col">Datum</th>
+                                <th scope="col">Uhrzeit</th>
+                                <th scope="col">Eintrag</th>
+                                <th scope="col">WorkflowId</th>
+                                <th scope="col">Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngFor="let row of rawBookings; let i=index">
+                                    <tr *ngIf="i<topEntries"> 
+                                        <td>{{formatter.formatDateDayMonth(row.refdate)}}
+                                            <p class="subfigure">
+                                                {{formatter.formatDateYear(row.refdate)}}
+                                            </p>
+                                        </td>
+                                        <td>
+                                            {{row.actualtime}}
+                                            <p class="subfigure">
+                                                {{row.actualtimeid}}
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <div *ngIf="row.directionid == 1; else elseBlock">Kommen</div>
+                                            <ng-template #elseBlock>Gehen</ng-template> 
+                                            <p class="subfigure">
+                                                {{row.directionid}}
+                                            </p>
+                                        </td>
+                                        <td>{{row.requestid}}</td>
+                                        <td>
+                                                <button type="button" (click)="deleteRequest(row);" *ngIf="hideDeleteReqBtn(row)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <tr (click)="handlePaginagingClick()">
+                                    <th colspan="4"></th>
+                                    <td>
+                                        Mehr...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+            </div>
+        </div>
+</div>

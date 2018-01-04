@@ -8,12 +8,18 @@ var _ = require("lodash")
 var jsreport = require('jsreport');
 var fs = require("fs");
 
+var logger = require('../log.js'); 
+
+// parse request body as JSON
+
 router.use(bodyParser.json());
+
+// application functions
 
 /*
 var schedule = require('node-schedule');
 var j = schedule.scheduleJob('16 * * * * *', function(){
-    console.log('The answer to life, the universe, and everything!');
+    logger.info('The answer to life, the universe, and everything!');
 });
 */
 
@@ -38,7 +44,7 @@ function checkForHoliday(inputDate){
     
             var cbWorkingdays = function (err, result) {
                 if (err) {
-                    console.log(err);
+                    logger.info(err);
                 }else{
                     data.resultWorkingdays = result;
                     resolve(data); 
@@ -60,14 +66,14 @@ function checkForHoliday(inputDate){
     var iterateFunction = function (data){
 
         if (data.resultWorkingdays[0].holiday != null){
-            console.log("HOLIDAAAAAAY")
+            logger.info("HOLIDAAAAAAY")
         }else{
-            console.log("No Holiday")
+            logger.info("No Holiday")
         }
 
         var insertValueInAuxTimeFunction = function (data){
-            console.log(data.input.userid)
-            console.log(data.output.vacationValues);
+            logger.info(data.input.userid)
+            logger.info(data.output.vacationValues);
         };
 
         data.outFunction = insertValueInAuxTimeFunction;
@@ -93,7 +99,7 @@ function checkForHoliday(inputDate){
             .then(iterateFunction)
     }
     catch(err){
-        console.log(err);
+        logger.info(err);
     }
         
 }
@@ -102,21 +108,22 @@ function checkForHoliday(inputDate){
 
 router.post('/addActualTime', VerifyToken, function(req, res, next) {
 
-    console.log("addActualTime triggered");
-
+    
     var input = {
         userid : req.body.userid,
         time : req.body.time,
         directionid : req.body.directionid,
-    }; 
+    };
 
-    console.log(req.body.time);
+    logger.info("addActualTime triggered");
+
+    logger.info(req.body.time);
 
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             res.status(200).send({status: "valid"});
         }
@@ -126,10 +133,9 @@ router.post('/addActualTime', VerifyToken, function(req, res, next) {
       
 });
 
-
 router.get('/getTimePairs', VerifyToken, function(req, res, next) {
 
-    console.log("getTimePairs triggered");
+    logger.info("getTimePairs triggered");
     var db = new mysqlInstance();
     var props = parseBasicProps(req);
 
@@ -163,7 +169,7 @@ router.get('/getTimePairs', VerifyToken, function(req, res, next) {
     }
     catch(err){
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
 
 });
@@ -185,7 +191,7 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
     
             var cbVacationContract = function (err, result) {
                 if (err) {
-                    console.log(err);
+                    logger.info(err);
                 }else{
                     data.contractVacationHrs = result;
                     resolve(data);
@@ -272,7 +278,7 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
         var outArr = _.filter(outArr, function(item){
             return item.refyear == ((new Date()).getFullYear()).toString();
         });
-        console.log(outArr);
+        logger.info(outArr);
         
         // close connection to database;
         db.con.end();
@@ -284,14 +290,14 @@ router.get('/getVacationInfo', VerifyToken, function(req, res, next) {
     }
     catch(err){
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
 
 });
 
 router.get('/getRawBookings', VerifyToken, function(req, res, next) {
     
-    console.log("getRawBookings triggered");
+    logger.info("getRawBookings triggered");
     
     var db = new mysqlInstance();
     var props = parseBasicProps(req);
@@ -299,7 +305,7 @@ router.get('/getRawBookings', VerifyToken, function(req, res, next) {
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             var output = basicAPI(result, props);
             res.status(200).send(output);
@@ -325,7 +331,7 @@ router.get('/getSingleBookings', VerifyToken, function(req, res, next) {
     
             var cbWorkingdays = function (err, result) {
                 if (err) {
-                    console.log(err);
+                    logger.info(err);
                 }else{
                     data.resultWorkingdays = result;
                     resolve(data); 
@@ -399,7 +405,7 @@ router.get('/getSingleBookings', VerifyToken, function(req, res, next) {
     }
     catch(err){
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
 
 
@@ -417,7 +423,7 @@ var getUserInfoFunction = function(data) {
 
         var cbUserInfo = function (err, result) {
             if (err) {
-                console.log(err);
+                logger.info(err);
             }else{
                 data.userInfo = result;
                 resolve(data); 
@@ -440,7 +446,7 @@ var getNumberWorkingdaysFunction = function(data) {
 
         var cbWorkingdays = function (err, result) {
             if (err) {
-                console.log(err);
+                logger.info(err);
             }else{
                 data.resultWorkingdays = result;
                 resolve(data); 
@@ -465,7 +471,7 @@ var getAuxtimeFunction = function(data) {
 
         var cbAuxtime = function (err, result) {
             if (err) {
-                console.log(err);
+                logger.info(err);
             }else{
                 data.resultAuxtime = result;
                 resolve(data); 
@@ -490,7 +496,7 @@ var getTimePairsFunction = function(data) {
 
         var cbPairs = function (err, result) {
             if (err) {
-                console.log(err);
+                logger.info(err);
             }else{
 
                 data.resultPairs = result;
@@ -561,10 +567,6 @@ var mergeAccBalance = function (data){
 
         _(outArr).forEach(calcBalance);
 
-        
-
-        
-
         // filter for the rows with refdate <= today()
         var today = new Date();
         var output = _.filter(outArr, function(monthRow){
@@ -613,9 +615,8 @@ router.get('/getAccountBalance', VerifyToken, function(req, res, next) {
     }
     catch(err){
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
-
             
 });
 
@@ -629,7 +630,7 @@ var getWorkingDaysDuringVacDurationFunction = function(data) {
 
         var cbWorkingdaysDuringVacDuration = function (err, result) {
             if (err) {
-                console.log(err);
+                logger.info(err);
             }else{
                 data.vacationWorkingDays = result;
                 resolve(data); 
@@ -695,14 +696,13 @@ var decideUponUserCategory = function(data){
         catch(err){
             db.con.end();
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }
 
     }else{
         db.con.end();
         res.status(500).send("usercategoryId is not defined");
     }
-
     
 };
 
@@ -717,7 +717,7 @@ var getRelevantWorkingdaysFunction = function(data) {
 
         var cbWorkingdays = function (err, result) {
             if (err) {
-                console.log(err);
+                logger.info(err);
             }else{
                 data.resultWorkingdays = result;
                 resolve(data); 
@@ -874,23 +874,22 @@ router.get('/getVacationValue', VerifyToken, function(req, res, next) {
     catch(err){
         db.con.end();
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
 
 });
-
 
 router.get('/getWorkingdays', VerifyToken, function(req, res, next) {
     var db = new mysqlInstance(); 
     var props = parseBasicProps(req);
 
-    console.log("getWorkingdays triggered");
+    logger.info("getWorkingdays triggered");
     
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             res.status(200).send(result);
         }
@@ -899,20 +898,6 @@ router.get('/getWorkingdays', VerifyToken, function(req, res, next) {
     db.getWorkingdays(req,cb);
 
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // REQUESTS AREA for the workflow handling
 
@@ -929,7 +914,7 @@ var getTimeRequestsFunction = function(data) {
         var cb = function (err, result) {
             if (err) {
                 res.status(500).send(err);
-                console.log(err);
+                logger.info(err);
             }else{
                 data.resultTimeRequests = result; 
                 resolve(data);  
@@ -945,7 +930,7 @@ var getTimeRequestsFunction = function(data) {
 
 router.get('/getTimeRequests', VerifyToken, function(req, res, next) {
     
-    console.log("getTimeRequests triggered");
+    logger.info("getTimeRequests triggered");
     
     var props = parseBasicProps(req);
 
@@ -981,7 +966,7 @@ router.get('/getTimeRequests', VerifyToken, function(req, res, next) {
     }
     catch(err){
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
 
 
@@ -998,7 +983,7 @@ var getVacRequestsFunction = function(data) {
         var cb = function (err, result) {
             if (err) {
                 res.status(500).send(err);
-                console.log(err);
+                logger.info(err);
             }else{
                 data.resultVacRequests = result;
 
@@ -1022,9 +1007,7 @@ var getVacRequestsFunction = function(data) {
 
 router.get('/getVacRequests', VerifyToken, function(req, res, next) {
 
-    // TODO: Hier noch ausschließlich zugänglich für eigene Requests wenn kein Admin (req.adminGroup)
-    
-    console.log("getVacRequests triggered");
+    logger.info("getVacRequests triggered");
     
     var props = parseBasicProps(req);
 
@@ -1060,22 +1043,22 @@ router.get('/getVacRequests', VerifyToken, function(req, res, next) {
     }
     catch(err){
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
     
 });
 
 router.post('/addRequest', VerifyToken, function(req, res, next) {
     
-    console.log("addRequest triggered");
+    logger.info("addRequest triggered");
     
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
-            console.log("req added");
+            logger.info("req added");
             res.status(200).send({status: "valid"});
         }
         db.con.end();
@@ -1086,13 +1069,13 @@ router.post('/addRequest', VerifyToken, function(req, res, next) {
 
 router.post('/addVacRequest', VerifyToken, function(req, res, next) {
     
-    console.log("addRequest triggered");
+    logger.info("addRequest triggered");
     
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             res.status(200).send({status: "valid"});
         }
@@ -1104,10 +1087,8 @@ router.post('/addVacRequest', VerifyToken, function(req, res, next) {
 
 router.post('/approveRequest', VerifyToken, function(req, res, next) {
     
-    console.log("approveRequest triggered");
+    logger.info("approveRequest triggered");
 
-   
-    
     var db = new mysqlInstance();
 
     var requestId = req.body.requestId; 
@@ -1140,12 +1121,12 @@ router.post('/approveRequest', VerifyToken, function(req, res, next) {
         
         if (requestcatid == 1 || requestcatid == 3 ) {
 
-            console.log("approve an id" + requestId);
+            logger.info("approve an id" + requestId);
 
             var cb = function (err, result) {
                 if (err) {
                     res.status(500).send(err);
-                    console.log(err);
+                    logger.info(err);
                 }else{
                     res.status(200).send({status: "valid | request approved"});
                     db.changeStatusTimeRequest(requestId,1);
@@ -1160,7 +1141,7 @@ router.post('/approveRequest', VerifyToken, function(req, res, next) {
             var cb = function (err, result) {
                 if (err) {
                     res.status(500).send(err);
-                    console.log(err);
+                    logger.info(err);
                 }else{
                     res.status(200).send({status: "valid | request deleted"});
                     db.changeStatusTimeRequest(requestId,1);
@@ -1185,7 +1166,7 @@ router.post('/approveRequest', VerifyToken, function(req, res, next) {
     catch(err){
         db.con.end();
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
         
 });
@@ -1194,14 +1175,14 @@ router.post('/approveRequest', VerifyToken, function(req, res, next) {
 
 router.post('/rejectRequest', VerifyToken, function(req, res, next) {
 
-    console.log("rejectRequest triggered");
+    logger.info("rejectRequest triggered");
     var requestId = req.body.requestId; 
 
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             res.status(200).send({status: "valid | rejected"});
         }
@@ -1272,7 +1253,7 @@ router.post('/approveVacRequest', VerifyToken, function(req, res, next) {
         var cb = function (err, result) {
             if (err) {
                 res.status(500).send(err);
-                console.log(err);
+                logger.info(err);
             }else{
                 res.status(200).send({status: "valid: added entries: " + inputArray.length + " as per request: " + data.input.requestId });
                 db.changeStatusVacRequest(data.input.requestId,1);
@@ -1297,21 +1278,21 @@ router.post('/approveVacRequest', VerifyToken, function(req, res, next) {
     catch(err){
         db.con.end();
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
 
 });
 
 router.post('/rejectVacRequest', VerifyToken, function(req, res, next) {
 
-    console.log("rejectVacRequest triggered");
+    logger.info("rejectVacRequest triggered");
     var requestId = req.body.requestId; 
 
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             res.status(200).send({status: "valid | rejected vacrequest"});
         }
@@ -1333,13 +1314,13 @@ router.post('/rejectVacRequest', VerifyToken, function(req, res, next) {
 
 router.post('/addPlantime', VerifyToken, function(req, res, next) {
     
-    console.log("addPlantime triggered");
+    logger.info("addPlantime triggered");
     
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             res.status(200).send({status: "valid"});
         }
@@ -1347,7 +1328,7 @@ router.post('/addPlantime', VerifyToken, function(req, res, next) {
         };
 
     // enable status changes for requests only for admins
-    if(req.adminGroup){
+    if(req.timeplannerGroup){
         db.addPlantime(req,cb);
     }else{
         db.con.end();
@@ -1358,8 +1339,7 @@ router.post('/addPlantime', VerifyToken, function(req, res, next) {
 
 router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
     
-    console.warn("HIER MUSS NOCH DIE BESCHRÄNKUNG all=true auf ADMINS eingerichtet werden");
-    console.log("getTimeRequests triggered");
+    logger.info("getTimeRequests triggered");
 
     var props = parseBasicProps(req);
 
@@ -1385,7 +1365,7 @@ router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
             var cbPlanTime = function (err, result) {
                 if (err) {
                     res.status(500).send(err);
-                    console.log(err);
+                    logger.info(err);
                 }else{
 
                     var userIdPlantimes = _.filter(result, function(item){
@@ -1433,7 +1413,7 @@ router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
     }
     catch(err){
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
     
 
@@ -1441,7 +1421,7 @@ router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
 
 router.get('/getPlantime', VerifyToken, function(req, res, next) {
     
-    console.log("getTimeRequests triggered");
+    logger.info("getTimeRequests triggered");
 
     var props = parseBasicProps(req);
 
@@ -1450,7 +1430,7 @@ router.get('/getPlantime', VerifyToken, function(req, res, next) {
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             var output = basicAPI(result, props); 
             res.status(200).send(output);
@@ -1465,13 +1445,13 @@ router.get('/getPlantime', VerifyToken, function(req, res, next) {
 
 router.post('/updatePlantime', VerifyToken, function(req, res, next) {
     
-    console.log("updatePlantime triggered");
+    logger.info("updatePlantime triggered");
     
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             res.status(200).send({status: "valid"});
         }
@@ -1479,7 +1459,7 @@ router.post('/updatePlantime', VerifyToken, function(req, res, next) {
         };
     
     // enable status changes for requests only for admins
-    if(req.adminGroup){
+    if(req.timeplannerGroup){
         db.updatePlantime(req,cb);
     }else{
         db.con.end();
@@ -1491,13 +1471,13 @@ router.post('/updatePlantime', VerifyToken, function(req, res, next) {
 
 router.post('/deletePlantime', VerifyToken, function(req, res, next) {
     
-    console.log("deletePlantime triggered");
+    logger.info("deletePlantime triggered");
     
     var db = new mysqlInstance();
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             res.status(200).send({status: "valid"});
         }
@@ -1505,7 +1485,7 @@ router.post('/deletePlantime', VerifyToken, function(req, res, next) {
         };
 
      // enable status changes for requests only for admins
-    if(req.adminGroup){
+    if(req.timeplannerGroup){
         db.deletePlantime(req,cb);
     }else{
         db.con.end();
@@ -1521,7 +1501,7 @@ router.post('/deletePlantime', VerifyToken, function(req, res, next) {
 router.get('/getUserInfo', VerifyToken, function(req, res, next) {
 
     console.warn("HIER MUSS NOCH DIE BESCHRÄNKUNG all=true auf ADMINS eingerichtet werden");
-    console.log("getUserInfo triggered");
+    logger.info("getUserInfo triggered");
     
     var props = parseBasicProps(req);
 
@@ -1542,7 +1522,7 @@ router.get('/getUserInfo', VerifyToken, function(req, res, next) {
     var cb = function (err, result) {
         if (err) {
             res.status(500).send(err);
-            console.log(err);
+            logger.info(err);
         }else{
             var output = basicAPI(result, props); 
             res.status(200).send(output);
@@ -1686,7 +1666,7 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
     }
     catch(err){
         res.status(500).send(err);
-        console.log(err);
+        logger.info(err);
     }
 
 });
@@ -1854,7 +1834,7 @@ function basicAPI(inputArr, props){
         if (typeof(props.aggregation.groupby) != "undefined"){
 
             var fields = props.aggregation.groupby; 
-            console.log("fields: " + fields)
+            logger.info("fields: " + fields)
             var groups = _.groupBy(outArr, function(value){
                 var group = ""; 
                 for (var i=0; i<fields.length; i++){

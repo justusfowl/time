@@ -35,7 +35,7 @@ export class SchedulerComponent implements OnInit{
   allUsers : any;
   selectedUser = null;
 
-  isAdmin : boolean; 
+  isTimePlanner : boolean; 
 
   public selectDelete : boolean;
   selectId: any; 
@@ -70,7 +70,7 @@ export class SchedulerComponent implements OnInit{
 
     this.selectedMode = 1;
 
-    this.isAdmin = this.authService.getIsAdmin();
+    this.isTimePlanner = this.authService.getIsTimePlanner();
     
     this.calendarOptions = {
       fixedWeekCount : false,
@@ -91,7 +91,7 @@ export class SchedulerComponent implements OnInit{
       mintime: "05:00:00",
       slotDuration: "00:15:00",
       defaultDate: (new Date()).toISOString().substring(0,10),
-      editable: this.isAdmin,
+      editable: this.isTimePlanner,
       eventLimit: true, // allow "more" link when too many events
       dayClick: this.handleCalenderClicked.bind(this),
       events: this.getPlantime.bind(this), 

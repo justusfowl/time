@@ -10,6 +10,8 @@ var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var bcrypt = require('bcryptjs');
 var config = require('../config'); // get config file
 
+var logger=require('winston'); // this retrieves default logger which was configured in log.js
+
 //router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
@@ -20,8 +22,7 @@ router.post('/login', function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader("Access-Control-Allow-Headers", 'Origin, X-Requested-With, Content-Type, Accept');
 */
-  console.log("login triggered");
-  console.log("login of: " + req.body.username);
+  logger.info("login triggered for "+ req.body.username);
 
   // user = domain user for authentication
   var domUser = req.body.username;
@@ -109,6 +110,22 @@ router.post('/login', function(req, res) {
     return promise;
   };
 
+  var isInPlannerGroup = function(data) {
+    
+        var promise = new Promise(function(resolve, reject){
+          ad.isUserMemberOf(domUser, config.AD.timeplangroup, function(err, isMember) {
+            if (err) {
+              console.log('ERROR: ' +JSON.stringify(err));
+              return;
+            }
+            data.timeplannerGroup = isMember;
+            console.log("is member of timeplanner: " + isMember)
+            resolve(data);
+          });
+        });
+        return promise;
+      };
+
   var getUserId = function(data) {
     var db = new mysqlInstance();
         var promise = new Promise(function(resolve, reject){
@@ -161,7 +178,7 @@ router.post('/login', function(req, res) {
      return promise;
   };
   
-  authenticate().then(isInUserGroup).then(isInAdminGroup).then(getUserId).then(returnResAndToken)       
+  authenticate().then(isInUserGroup).then(isInAdminGroup).then(isInPlannerGroup).then(getUserId).then(returnResAndToken)       
 
 });
 

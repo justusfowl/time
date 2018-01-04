@@ -13,7 +13,8 @@ module.exports = {
         "baseDN": 'dc={DC},dc={dc}',
         "baseDNLogin": '{DOMAIN}',
         "usergroup": 'TimeUser', 
-        "admingroup" : 'TimeAdmin'
+        "admingroup" : 'TimeAdmin',
+        "timeplangroup" : 'TimePlanner'
 
     }, 
     tokenValidSeconds : 20000000

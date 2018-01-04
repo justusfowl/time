@@ -28,10 +28,16 @@ export class AuthenticationService {
             return false; 
         } 
     }
+
+    getIsTimePlanner(){
+        if (localStorage.getItem('currentUserIsTimePlanner') == "true"){
+            return true; 
+        }else{
+            return false; 
+        } 
+    }
     
     login(username: string, password: string) {
-
-
 
         var body = {"username" : username, "password": password};
 
@@ -51,6 +57,7 @@ export class AuthenticationService {
                     localStorage.setItem('currentUserToken', user.token);
                     localStorage.setItem('currentUserName', user.username);
                     localStorage.setItem('currentUserIsAdmin', user.adminGroup);
+                    localStorage.setItem('currentUserIsTimePlanner', user.timeplannerGroup);
                     localStorage.setItem('currentUserId', user.userid);
 
                     $('#labelUsername').html(user.username);

@@ -17,6 +17,7 @@ function verifyToken(req, res, next) {
     req.user = decoded.user;
     req.userGroup = decoded.userGroup;
     req.adminGroup = decoded.adminGroup;
+    req.timeplannerGroup = decoded.timeplannerGroup;
 
     // if a normal user logs on, then he/she must only be able to access his/her own data 
     // hence requesting userid is set to the one within the token

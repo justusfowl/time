@@ -3,14 +3,22 @@
 module.exports = (grunt) => {
   grunt.initConfig({
     execute: {
-      target: {
-        src: ['server.js']
+      target: { 
+        src: ['server.js'] 
       }
-    },
-    watch: {
-      scripts: {
+    }, 
+    watch: {  
+      scripts: { 
         files: ['*.js'],
-        tasks: ['execute'],
+        tasks: ['execute'], 
+      }, 
+      options: {
+        spawn: true,
+        livereload: {
+          options: { livereload: true, spawn: true },
+          files: ['build/**/*.{css,js}']
+        },
+        files: ['build/**/*.{css,js}'] 
       },
     }
   });

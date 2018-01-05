@@ -56,6 +56,7 @@ export class SchedulerComponent implements OnInit{
   selectedMode : number;
   modeOptions = [{id: 1, name: "Zeiten planen", selected: true},{id: 2, name: "Vergleich-Plan-Ist", selected: false}];
 
+  calendarMode: number; 
 
   onCalendarInit(initialized: boolean) {
     console.log('Calendar initialized');
@@ -67,6 +68,8 @@ export class SchedulerComponent implements OnInit{
 
     this.getUserInfo();
     this.selectDelete = false;
+
+
 
     this.selectedMode = 1;
 
@@ -88,7 +91,9 @@ export class SchedulerComponent implements OnInit{
         // days of week. an array of zero-based day of week integers (0=Sunday)
         // (Monday-Thursday in this example)
       },
-      mintime: "05:00:00",
+      minTime: "05:00:00",
+      maxTime: "19:00:00",
+      scrollTime: "06:30:00",
       slotDuration: "00:15:00",
       defaultDate: (new Date()).toISOString().substring(0,10),
       editable: this.isTimePlanner,
@@ -100,6 +105,34 @@ export class SchedulerComponent implements OnInit{
       eventClick: this.eventClick.bind(this)
     }
 
+    $(".calendarModeBtn").on("click", function(){
+      $(".btn-group").find(".active").removeClass("active");
+      $(this).addClass("active");
+    });
+
+  }
+
+  setCalendarMode(mode){
+
+    this.selectedMode = mode;
+
+    if (this.selectedMode == 1){
+      var slotDuration = "00:15:00";
+      var mintime = "06:00:00";
+    }else if (this.selectedMode == 2){
+      var slotDuration = "01:00:00";
+      var mintime = "03:00:00";
+    }else{
+      var slotDuration = "00:30:00";
+      var mintime = "00:00:00";
+    }
+    
+    this.myCalendar.fullCalendar("option", {
+      "mintime": mintime,
+      "slotDuration": slotDuration
+    });
+
+    this.myCalendar.fullCalendar("render");
   }
 
   handleModalAccept(){
@@ -171,7 +204,7 @@ export class SchedulerComponent implements OnInit{
       var itemSelected = $(jsEvent.target).parent();
       $(jsEvent.target).parent().addClass('slotSelected');
     }else{
-      console.log("Deleting of items can only be done for future events.");
+      alert("Deleting of items can only be done for future events.");
     }
   }
 
@@ -200,24 +233,28 @@ export class SchedulerComponent implements OnInit{
         "endDate": end.format().substring(0,10), filters: this.filters};
     
         this.dataHandlingService.getPlantime(params).subscribe(
-          data => {
-              callback(data);
+          data => { 
+            callback(data);
           },
           error => {
               this.dataHandlingService.errorHandler(error);
           });
       }
       else if (this.selectedMode == 2){
-
-        let params = {"userid": this.selectedUser.userid, "sortBy": "refdate", "sortDir" : "DESC"};
+        if (this.selectedUser.userid != null){
+          let params = {"userid": this.selectedUser.userid, "sortBy": "refdate", "sortDir" : "DESC"};
     
-        this.dataHandlingService.getPlanActuals(params).subscribe(
-          data => {
-            callback(data);
-          },
-          error => {
-            this.dataHandlingService.errorHandler(error);
-          });
+          this.dataHandlingService.getPlanActuals(params).subscribe(
+            data => {
+              callback(data);
+            },
+            error => {
+              this.dataHandlingService.errorHandler(error);
+            });
+        }else{
+          alert("Bitte einen Nutzer auswählen für den Vergleich")
+        }
+
       }
   };
 

@@ -73,6 +73,7 @@ export class FormatterService {
     }
 
     formatReqCatId(reqCatId){
+
         if (reqCatId == 1){
             return "Zeitnachtrag"
         }

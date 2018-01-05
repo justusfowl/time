@@ -10,7 +10,8 @@ var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var bcrypt = require('bcryptjs');
 var config = require('../config'); // get config file
 
-var logger=require('winston'); // this retrieves default logger which was configured in log.js
+var logger = require('../log.js'); 
+//var logger = require('winston'); // this retrieves default logger which was configured in log.js
 
 //router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());

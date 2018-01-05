@@ -37,6 +37,13 @@ export class AdminComponent implements OnInit{
     filterStatus = 0;
     filterStatusVac = 0; 
 
+    //time modifications
+
+    selectedUser : Number;
+    timeTimeModi: Number;
+    timeTimeModiFrom: any; 
+    timeTimeModiTo: any;
+
     ngOnInit(){
 
         this.util.setNavOnRoute("admin");
@@ -54,7 +61,6 @@ export class AdminComponent implements OnInit{
         this.dataHandlingService.getUserInfo(params).subscribe(
             data => {
             this.allUsers = data;
-            console.log(data);
             },
             error => {
                 this.dataHandlingService.errorHandler(error);
@@ -142,6 +148,38 @@ export class AdminComponent implements OnInit{
             error => {
                 this.dataHandlingService.errorHandler(error);
             });
+    }
+
+    addTimeModi(){
+
+        try{
+            var body = {
+                userid: this.ensureValue(this.selectedUser),
+                dateModiStart : this.ensureValue(this.timeTimeModiFrom.formatted),
+                dateModiEnd : this.ensureValue(this.timeTimeModiTo.formatted),
+                amtHrsModi : this.ensureValue(this.timeTimeModi)
+            };
+
+            this.dataHandlingService.addTimeModi(body).subscribe(
+                data => {
+                    this.selectedUser = null;
+                    this.timeTimeModi = null;
+                    this.timeTimeModiFrom = null;
+                    this.timeTimeModiTo = null
+                },
+                error => {
+                    this.dataHandlingService.errorHandler(error);
+                });
+                
+        }catch(err){
+            alert(err)
+        }
+    }
+
+    ensureValue(val){
+        if (val == null){
+            throw Error ("value null");
+        }
     }
 
     handleStatusSelect(event){

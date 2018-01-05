@@ -108,7 +108,6 @@ function checkForHoliday(inputDate){
 
 router.post('/addActualTime', VerifyToken, function(req, res, next) {
 
-    
     var input = {
         userid : req.body.userid,
         time : req.body.time,
@@ -1202,24 +1201,19 @@ router.post('/rejectRequest', VerifyToken, function(req, res, next) {
 
 router.post('/approveVacRequest', VerifyToken, function(req, res, next) {
 
-    var requestId = req.body.requestId; 
-    
-    var db = new mysqlInstance();
-
     // get all data from the requestId
 
     var db = new mysqlInstance();
+
+    var requestId = req.body.requestId; 
     
     var data = {};
     data.db = db;
     data.req = req;
     data.input = {};
     data.input.requestId = requestId; 
-
-
     data.res = res;
-    //data.props= props; 
-
+    
     var outFunction = function (data){
 
         var vacationOverview = data.output.vacationOverview;
@@ -1337,6 +1331,93 @@ router.post('/addPlantime', VerifyToken, function(req, res, next) {
 
 });
 
+router.post('/addTimeModi', VerifyToken, function(req, res, next) {
+    
+    logger.info("addTimeModi triggered");
+    
+    var db = new mysqlInstance();
+    
+    var data = {};
+    data.req = req;
+    data.input = {
+        userid : req.body.userid,
+        betweenStartDate : req.body.dateModiStart,
+        betweenEndDate : req.body.dateModiEnd, 
+        amtHrsModi : parseFloat(req.body.amtHrsModi)
+    };
+    data.res = res;
+
+    console.log(data.input);
+
+    var getWorkingdaysFunction = function(data) {
+        var promise = new Promise(function(resolve, reject){
+    
+            var cbWorkingdays = function (err, result) {
+                if (err) {
+                    logger.info(err);
+                }else{
+                    data.resultWorkingdays = result;
+                    resolve(data); 
+                }
+            };
+            db.getWorkingdays(data.input, cbWorkingdays);
+        });
+        return promise;
+    };
+
+    var outFunction = function (data){
+
+        var inputArray = [];
+
+        if (data.resultWorkingdays.length > 0){
+
+            var amtHrsModiPerDay = data.input.amtHrsModi / data.resultWorkingdays.length; 
+        
+            data.resultWorkingdays.forEach(function(item,index){
+                
+                var timeModiStart = new Date(item.refdate.substring(0,4) + "-" + item.refdate.substring(4,6) + "-" + item.refdate.substring(6,8) + " 09:00:00")
+                var timeModiEnd = new Date (timeModiStart.getTime() + amtHrsModiPerDay * 60 * 60 * 1000 )
+
+                // Example: [parseInt(userId),auxtimeFrom,auxtimeTo,catTimeId,parseInt(requestId)]
+                inputArray.push([parseInt(data.input.userid),timeModiStart,timeModiEnd,4,null])
+                
+            });
+            
+            console.log(data.resultWorkingdays.length);
+            console.log(amtHrsModiPerDay);
+
+            var cb = function (err, result) {
+                if (err) {
+                    res.status(500).send(err);
+                    logger.info(err);
+                }else{
+                    res.status(200).send({status: "valid: added entries: " + inputArray.length + " as per timemodi request "});
+                }
+                db.con.end();
+                };
+
+            db.addAuxTime(inputArray, cb);
+
+        }else{
+            db.con.end();
+            res.status(500).send("Please check the dates");
+        }
+        
+    };
+
+    try{
+        getWorkingdaysFunction(data)
+            .then(outFunction);
+    }
+    catch(err){
+        db.con.end();
+        res.status(500).send(err);
+        logger.info(err);
+    }
+
+});
+
+
 router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
     
     logger.info("getTimeRequests triggered");
@@ -1357,7 +1438,6 @@ router.get('/getPlanActuals', VerifyToken, function(req, res, next) {
         var userid = req.query.userid;
         data.input.userid = userid; 
     }
-   
 
     var getPlanTimeFunction = function(data) {
         var promise = new Promise(function(resolve, reject){
@@ -1494,9 +1574,7 @@ router.post('/deletePlantime', VerifyToken, function(req, res, next) {
         
 });
 
-
 // BASIC Endpoints
-
 
 router.get('/getUserInfo', VerifyToken, function(req, res, next) {
 
@@ -1534,9 +1612,7 @@ router.get('/getUserInfo', VerifyToken, function(req, res, next) {
 
 });
 
-
 // REPORTING 
-
 
 router.get('/getReport', VerifyToken, function(req, res, next) {
 

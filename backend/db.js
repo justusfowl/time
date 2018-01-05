@@ -193,6 +193,8 @@ mysqlInstance.prototype.getWorkingdays = function (input, cb, flagBeforeToday = 
         " + filterStr + "\
         order by lookupdates.date; "
 
+        console.log(sql)
+
     this.con.query(sql, cb );
 }
 

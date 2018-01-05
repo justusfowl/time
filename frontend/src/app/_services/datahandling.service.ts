@@ -366,6 +366,20 @@ export class DataHandlingService {
         }
     }
 
+    addTimeModi(body) {
+        
+        this.util.showLoader();
+
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/addTimeModi', JSON.stringify(body), options)
+            .map((res: Response) => this.util.hideLoader(res.json()));
+            
+    }
+
     // Calender / Scheduler handling
 
     addPlantime(body) {

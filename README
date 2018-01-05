@@ -1,1 +1,14 @@
 This is the Repo of the timesheet application of ffa
+
+Version 0.1.1. 
+- Account: Display actual time including aux-hours
+- Scheduler: Add display details/overview 
+
+
+
+
+
+TODO: 
+- formatting of "nav" items on creation messes up panel buttons
+- adding users through the UI
+- 

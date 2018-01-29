@@ -3,12 +3,11 @@ This is the Repo of the timesheet application of ffa
 Version 0.1.1. 
 - Account: Display actual time including aux-hours
 - Scheduler: Add display details/overview 
-
-
-
+- Add no-caching for GET requests to ensure actuality of displayed information
+- Timegroupplanner gets all users available for planning in scheduler view
 
 
 TODO: 
 - formatting of "nav" items on creation messes up panel buttons
 - adding users through the UI
-- 
+- daily runs of checks if it is a public holiday or not

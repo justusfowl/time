@@ -1587,7 +1587,7 @@ router.get('/getUserInfo', VerifyToken, function(req, res, next) {
 
     var input = {}; 
 
-    if(req.adminGroup){
+    if(req.adminGroup || req.timeplannerGroup){
         if (req.query.all){
             input.all = true;
         }else{

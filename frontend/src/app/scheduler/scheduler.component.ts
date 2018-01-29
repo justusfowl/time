@@ -69,8 +69,6 @@ export class SchedulerComponent implements OnInit{
     this.getUserInfo();
     this.selectDelete = false;
 
-
-
     this.selectedMode = 1;
 
     this.isTimePlanner = this.authService.getIsTimePlanner();

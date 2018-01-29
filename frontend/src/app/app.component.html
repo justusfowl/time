@@ -30,8 +30,12 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
                 <li class="nav-item">
+                    <p id="labelUsername" class="navbar-text nav-link">Min verbleib. {{activityRemainingTime}}</p>
+                </li>
+                <li class="nav-item">
                     <p id="labelUsername" class="navbar-text nav-link">{{username}}</p>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link" (click)="clickLogout()" >Logout</a>
                 </li>

@@ -43,7 +43,8 @@ export class DataHandlingService {
         let body = {"userid" : userid, "time": time, "directionid" : directionid }
 
         let headers = new Headers({'Content-Type': 'application/json'});          
-        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"));
+        headers.append('Cache-Control','no-cache');
         
         let options = new RequestOptions({ headers: headers });
         
@@ -71,7 +72,8 @@ export class DataHandlingService {
             }
            
             let headers = new Headers({'Content-Type': 'application/json'});          
-            headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+            headers.append('x-access-token',localStorage.getItem("currentUserToken"));
+            headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
             
@@ -100,7 +102,8 @@ export class DataHandlingService {
             }
             
             let headers = new Headers({'Content-Type': 'application/json'});          
-            headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+            headers.append('x-access-token',localStorage.getItem("currentUserToken"));
+            headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
             
@@ -129,7 +132,8 @@ export class DataHandlingService {
             }
             
             let headers = new Headers({'Content-Type': 'application/json'});          
-            headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+            headers.append('x-access-token',localStorage.getItem("currentUserToken"));
+            headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
             
@@ -158,7 +162,8 @@ export class DataHandlingService {
             }
             
             let headers = new Headers({'Content-Type': 'application/json'});          
-            headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+            headers.append('x-access-token',localStorage.getItem("currentUserToken"));
+            headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
             
@@ -187,7 +192,8 @@ export class DataHandlingService {
             }
             
             let headers = new Headers({'Content-Type': 'application/json'});          
-            headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+            headers.append('x-access-token',localStorage.getItem("currentUserToken"));
+            headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
             
@@ -425,7 +431,7 @@ export class DataHandlingService {
         this.util.showLoader();
         
         let headers = new Headers({'Content-Type': 'application/json'});          
-        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"));
         
         let options = new RequestOptions({ headers: headers });
         
@@ -438,7 +444,7 @@ export class DataHandlingService {
         this.util.showLoader();
         
         let headers = new Headers({'Content-Type': 'application/json'});          
-        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"));
         
         let options = new RequestOptions({ headers: headers });
         
@@ -463,7 +469,8 @@ export class DataHandlingService {
         
         let headers = new Headers({'Content-Type': 'application/json'});          
         headers.append('x-access-token',localStorage.getItem("currentUserToken"));
-        headers.append('Accept',"application/pdf")
+        headers.append('Accept',"application/pdf");
+        headers.append('Cache-Control','no-cache');
         
         let options = new RequestOptions({ headers: headers, params: params,responseType: ResponseContentType.Blob });
 
@@ -491,7 +498,8 @@ export class DataHandlingService {
         }
         
         let headers = new Headers({'Content-Type': 'application/json'});          
-        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"));
+        headers.append('Cache-Control','no-cache');
         
         let options = new RequestOptions({ headers: headers, params: params });
 

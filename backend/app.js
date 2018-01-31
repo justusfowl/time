@@ -10,7 +10,7 @@ app.use(function(req, res, next) {
   
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
-  res.setHeader("Access-Control-Allow-Headers", 'Origin, x-access-token,Authorization,  X-Requested-With, Content-Type, Accept, Cache-Control');
+  res.setHeader("Access-Control-Allow-Headers", 'Origin, x-access-token,Authorization,  X-Requested-With, Content-Type, Accept, Cache-Control, Expires, Pragma');
   
   next();
 });

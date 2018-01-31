@@ -48,8 +48,6 @@ export class DataHandlingService {
         
         let options = new RequestOptions({ headers: headers });
         
-        console.log(headers);
-        
         return this.http.post(this.BaseURL + this.APIUrl + 'time/addActualTime', JSON.stringify(body), options)
             .map((res: Response) => this.util.hideLoader(res.json()));
             
@@ -70,14 +68,14 @@ export class DataHandlingService {
             if (!params.userid){
                 throw new Error("No userid is defined for the API call on gettimepairs");
             }
-           
+            /*
             let headers = new Headers({'Content-Type': 'application/json'});          
             headers.append('x-access-token',localStorage.getItem("currentUserToken"));
             headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
-            
-            return this.http.get(this.BaseURL + this.APIUrl + 'time/getTimePairs', options)
+            */
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getTimePairs', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -101,13 +99,16 @@ export class DataHandlingService {
                 throw new Error("No userid is defined for the API call on gettimepairs");
             }
             
+            /*
             let headers = new Headers({'Content-Type': 'application/json'});          
             headers.append('x-access-token',localStorage.getItem("currentUserToken"));
             headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
-            
-            return this.http.get(this.BaseURL + this.APIUrl + 'time/getAccountBalance', options)
+            */
+
+
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getAccountBalance', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -131,13 +132,15 @@ export class DataHandlingService {
                 throw new Error("No userid is defined for the API call on gettimepairs");
             }
             
+            /*
             let headers = new Headers({'Content-Type': 'application/json'});          
             headers.append('x-access-token',localStorage.getItem("currentUserToken"));
             headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
             
-            return this.http.get(this.BaseURL + this.APIUrl + 'time/getVacationInfo', options)
+            */
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getVacationInfo', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -161,13 +164,15 @@ export class DataHandlingService {
                 throw new Error("No userid is defined for the API call on gettimepairs");
             }
             
+            /*
             let headers = new Headers({'Content-Type': 'application/json'});          
             headers.append('x-access-token',localStorage.getItem("currentUserToken"));
             headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
             
-            return this.http.get(this.BaseURL + this.APIUrl + 'time/getRawBookings', options)
+            */
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getRawBookings', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -191,13 +196,15 @@ export class DataHandlingService {
                 throw new Error("No userid is defined for the API call on gettimepairs");
             }
             
+            /*
             let headers = new Headers({'Content-Type': 'application/json'});          
             headers.append('x-access-token',localStorage.getItem("currentUserToken"));
             headers.append('Cache-Control','no-cache');
             
             let options = new RequestOptions({ headers: headers, params: params });
+            */
             
-            return this.http.get(this.BaseURL + this.APIUrl + 'time/getSingleBookings', options)
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getSingleBookings', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -224,12 +231,13 @@ export class DataHandlingService {
                 throw new Error("No userid is defined for the API call on gettimepairs");
             }
             
+            /*
             let headers = new Headers({'Content-Type': 'application/json'});          
             headers.append('x-access-token',localStorage.getItem("currentUserToken"))
             
             let options = new RequestOptions({ headers: headers, params: params });
-            
-            return this.http.get(this.BaseURL + this.APIUrl + 'time/getTimeRequests', options)
+            */
+            return this.http.get(this.BaseURL + this.APIUrl + 'time/getTimeRequests', this.checkParamsPrepareOptions(params))
                 .map(res => this.util.hideLoader(res.json()));
 
         }
@@ -500,6 +508,9 @@ export class DataHandlingService {
         let headers = new Headers({'Content-Type': 'application/json'});          
         headers.append('x-access-token',localStorage.getItem("currentUserToken"));
         headers.append('Cache-Control','no-cache');
+        headers.append('Cache-Control','no-store');
+        headers.append('Expires','0');
+        headers.append('Pragma','no-cache');
         
         let options = new RequestOptions({ headers: headers, params: params });
 

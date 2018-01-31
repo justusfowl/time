@@ -79,7 +79,7 @@
         <a data-toggle="collapse" data-target="#collapseTwo" 
             class="collapsed">
             <i class="fa fa-clock-o" aria-hidden="true"></i>
-            Tagesgebaue Buchungsübersicht in Stunden
+            Tagesgenaue Buchungsübersicht in Stunden
         </a>
         </h4>
 
@@ -105,39 +105,39 @@
             </div>        
            
             <table class="table table-hover">
-                    <thead>
-                        <tr>
-                        <th scope="col">Tag</th>
-                        <th scope="col">Arbeitszeit</th>
-                        <th scope="col">Krankheit</th>
-                        <th scope="col">Urlaub</th>
-                        <th scope="col">Feiertage</th>
-                        <th scope="col">Zeitausgleich</th>
+                <thead>
+                    <tr>
+                    <th scope="col">Tag</th>
+                    <th scope="col">Arbeitszeit</th>
+                    <th scope="col">Krankheit</th>
+                    <th scope="col">Urlaub</th>
+                    <th scope="col">Feiertage</th>
+                    <th scope="col">Zeitausgleich</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let row of filteredDayBookings; let i=index">
+                        <tr *ngIf="i<topEntries">
+                            <th scope="row">{{formatter.formatRefDate(row.refdate)}}
+                                <p class="subfigure">
+                                        {{row.day}}
+                                </p>
+                            </th>
+                            <td>{{formatter.formatNumberDecimals(row.hrsWorked,2)}}</td>
+                            <td>{{formatter.formatNumberDecimals(row.sickness,2)}}</td>
+                            <td>{{formatter.formatNumberDecimals(row.vacation,2)}}</td>
+                            <td>{{formatter.formatNumberDecimals(row.holidaytime,2)}}</td>
+                            <td>{{formatter.formatNumberDecimals(row.auxAddTime,2)}}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <ng-container *ngFor="let row of filteredDayBookings; let i=index">
-                            <tr *ngIf="i<topEntries">
-                                <th scope="row">{{formatter.formatRefDate(row.refdate)}}
-                                    <p class="subfigure">
-                                            {{row.day}}
-                                    </p>
-                                </th>
-                                <td>{{formatter.formatNumberDecimals(row.hrsWorked,2)}}</td>
-                                <td>{{formatter.formatNumberDecimals(row.sickness,2)}}</td>
-                                <td>{{formatter.formatNumberDecimals(row.vacation,2)}}</td>
-                                <td>{{formatter.formatNumberDecimals(row.holidaytime,2)}}</td>
-                                <td>{{formatter.formatNumberDecimals(row.auxAddTime,2)}}</td>
-                            </tr>
-                        </ng-container>
-                        <tr (click)="handlePaginagingClick()">
-                            <th colspan="5"></th>
-                            <td>
-                                Mehr...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                    </ng-container>
+                    <tr (click)="handlePaginagingClick()">
+                        <th colspan="5"></th>
+                        <td>
+                            Mehr...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -186,7 +186,7 @@
                                         </td>
                                         <td>{{row.requestid}}</td>
                                         <td>
-                                                <button type="button" (click)="deleteRequest(row);" *ngIf="hideDeleteReqBtn(row)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                <button type="button" (click)="deleteRequest(row, $event);" *ngIf="hideDeleteReqBtn(row)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                                         </td>
                                     </tr>
                                 </ng-container>

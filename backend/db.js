@@ -159,7 +159,7 @@ mysqlInstance.prototype.getWorkingdays = function (input, cb, flagBeforeToday = 
     var filterStr = ""; 
 
     if (flagBeforeToday){
-        filterStr = " and month(lookupdates.date) <= month(now()) and year(lookupdates.date) <= year(now()) ";
+        filterStr = " and replace(lookupdates.date,'-','') < concat(year(now()),month(now())) ";
     }
     else if (typeof(input.betweenStartDate) != "undefined"){
         var startDate = input.betweenStartDate.replace(/-/g,"");
@@ -193,6 +193,7 @@ mysqlInstance.prototype.getWorkingdays = function (input, cb, flagBeforeToday = 
         " + filterStr + "\
         order by lookupdates.date; "
 
+        console.log("tralal")
         console.log(sql)
 
     this.con.query(sql, cb );

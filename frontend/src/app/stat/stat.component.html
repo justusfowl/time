@@ -5,6 +5,9 @@
         <li class="active">
             <a  href="#1a" data-toggle="tab">Zeitreports</a>
         </li>
+        <li class="active">
+            <a  href="#2a" data-toggle="tab">Zeitkonten</a>
+        </li>
     </ul>
     <div class="tab-content clearfix">
         <div class="tab-pane active" id="1a">
@@ -34,21 +37,72 @@
                                     </td>
                                     <td>
                                         <button type="button" (click)="onUserRowClick(user,1);" ><i class="fa fa-download" aria-hidden="true"></i></button>
-                                        <button type="button" (click)="onUserRowClick(user,2);" ><i class="fa fa-eye" aria-hidden="true"></i></button>  
+                                        <button hidden type="button" (click)="onUserRowClick(user,2);" ><i class="fa fa-eye" aria-hidden="true"></i></button>  
                                     </td>
                                 </tr>
                             </ng-container>
                         </tbody>
-                    </table>      
+                    </table> 
                 </div>
         </div>
         <div class="tab-pane" id="2a">
                 <div class="row">                                
+                    <div class="col-md-2">
+                        <select (change)="handleUserSelect($event.target);" class="selectpicker dropdown-toggle btn btn-default btn-secondary" [(ngModel)]="selectedUser">
+                            <option *ngFor="let u of allUsers" [ngValue]="u.userid">{{u.username}}</option>
+                        </select>
+                    </div>    
                     <div class="col-md-4 accSubtitle">
-                        Blank
+                        <form #myForm="ngForm" novalidate>
+                            <my-date-picker name="filterRefDateFrom" [options]="myDatePickerOptions" (dateChanged)="onDateAccountChanged($event, 'from')" [(ngModel)]="refDateFrom" required></my-date-picker>
+                        </form>
                     </div>
-                                    
+                    <div class="col-md-4 accSubtitle">
+                        <form #myForm="ngForm" novalidate>
+                            <my-date-picker name="filterRefDateTo" [options]="myDatePickerOptions" (dateChanged)="onDateAccountChanged($event, 'to')" [(ngModel)]="refDateTo" required></my-date-picker>
+                        </form>
+                    </div>   
                 </div>
+                <div class="row">
+                    <div class="col-md-2 accSubtitle">
+                        Nutzer:
+                    </div>
+                    <div class="col-md-4 accSubtitle">
+                        von:
+                    </div>
+                    <div class="col-md-4 accSubtitle">
+                        bis:
+                    </div>
+                    
+                </div>    
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                        <th scope="col">Tag</th>
+                        <th scope="col">Arbeitszeit {{formatter.formatNumberDecimals(filteredDayBookingsTotals.hrsWorked,2)}}</th>
+                        <th scope="col">Krankheit {{formatter.formatNumberDecimals(filteredDayBookingsTotals.sickness,2)}}</th>
+                        <th scope="col">Urlaub {{formatter.formatNumberDecimals(filteredDayBookingsTotals.vacation,2)}}</th>
+                        <th scope="col">Feiertage {{formatter.formatNumberDecimals(filteredDayBookingsTotals.holidaytime,2)}}</th>
+                        <th scope="col">Zeitausgleich {{formatter.formatNumberDecimals(filteredDayBookingsTotals.auxAddTime,2)}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let row of filteredDayBookings; let i=index">
+                            <tr>
+                                <th scope="row">{{formatter.formatRefDate(row.refdate)}}
+                                    <p class="subfigure">
+                                            {{row.day}}
+                                    </p>
+                                </th>
+                                <td>{{formatter.formatNumberDecimals(row.hrsWorked,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.sickness,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.vacation,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.holidaytime,2)}}</td>
+                                <td>{{formatter.formatNumberDecimals(row.auxAddTime,2)}}</td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
         </div>
         <div class="tab-pane" id="3a">
             <div class="tab-pane" id="2a">

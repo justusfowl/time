@@ -11,7 +11,11 @@ export class AuthenticationService {
         private dataHandlingService : DataHandlingService,
     ) { }
 
-    public username : any
+    public username : any; 
+    public activityInterval : any;
+    public activityRemainingTime: any;
+    public logonDate : any;
+    public logoffDate: any;
 
     getUsername(){
         return localStorage.getItem('currentUserName');
@@ -62,6 +66,8 @@ export class AuthenticationService {
 
                     $('#labelUsername').html(user.username);
 
+                    this.initiateActivityTime();
+
                     // FOR DEV PURPOSES SET USER ID 
 
                     //var devUserId = "6";
@@ -78,7 +84,59 @@ export class AuthenticationService {
         localStorage.removeItem('currentUserIsAdmin');
 
         $('#labelUsername').html("");
-        console.log("logout")
+
+        clearInterval(this.activityInterval);
+
+        console.log("logout");
     }
+
+    initiateActivityTime(){
+
+        var logoffDate = new Date(); 
+
+        //define the period after which auto-logout happens in minutes 
+        logoffDate.setMinutes(logoffDate.getMinutes() + 3);
+    
+        this.logoffDate = logoffDate;
+        
+        if (this.activityInterval){
+            clearInterval(this.activityInterval);
+        };
+
+        this.activityInterval = setInterval(this.updateActivityTime.bind(this), 1000);
+    }
+
+    updateActivityTime(){
+
+        var now = new Date();
+    
+        function millisToMinutesAndSeconds(millis) {
+          var minutes = Math.floor(millis / 60000);
+          var seconds = parseFloat(((millis % 60000) / 1000).toFixed(0));
+          return (seconds == 60 ? (minutes+1) + ":00" : minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
+        }
+        var timeDiff = (this.logoffDate.getTime() - now.getTime()); 
+    
+        var displayTimeDiff = millisToMinutesAndSeconds(timeDiff);
+    
+        this.activityRemainingTime = displayTimeDiff;  
+    
+        if (timeDiff < 0 ){
+            if (confirm('Clicken Sie OK, wenn Sie weiterarbeiten wollen?')) {
+                this.initiateActivityTime();
+            } else {
+                this.logoutTimer();
+                
+            }
+            
+        }
+    
+      }
+    
+  logoutTimer(){
+    this.logout();
+    window.location.replace("http://intranet.praxis.local");
+
+  }
     
 }

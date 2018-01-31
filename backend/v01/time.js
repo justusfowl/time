@@ -333,6 +333,7 @@ router.get('/getSingleBookings', VerifyToken, function(req, res, next) {
                     logger.info(err);
                 }else{
                     data.resultWorkingdays = result;
+                    
                     resolve(data); 
                 }
             };
@@ -341,7 +342,28 @@ router.get('/getSingleBookings', VerifyToken, function(req, res, next) {
         return promise;
     };
 
-    var merge = function (data){
+    var outFunction = function (data){
+
+        db.con.end();
+        var output = basicAPI(data.singleBookings, props);
+        res.status(200).send(output);
+
+    }
+    
+    try{
+        getWorkingdaysFunction(data).then(getTimePairsFunction).then(getAuxtimeFunction).then(mergeSingleBookings).then(outFunction);
+    }
+    catch(err){
+        res.status(500).send(err);
+        logger.info(err);
+    }
+
+
+});
+
+var mergeSingleBookings = function (data){
+
+    var promise = new Promise(function(resolve, reject){
         
         var workingDays = data.resultWorkingdays;
 
@@ -392,23 +414,16 @@ router.get('/getSingleBookings', VerifyToken, function(req, res, next) {
         .values()   
         .flatten()
         .value();
+
         
-        // close connection to database;
-        db.con.end();
-        var output = basicAPI(outArr, props);
-        res.status(200).send(output);
-    }
+        data.singleBookings = outArr;
 
-    try{
-        getWorkingdaysFunction(data).then(getTimePairsFunction).then(getAuxtimeFunction).then(merge);
-    }
-    catch(err){
-        res.status(500).send(err);
-        logger.info(err);
-    }
+        resolve(data); 
 
-
-});
+    });
+    return promise;
+    
+}
 
 var getUserInfoFunction = function(data) {
 
@@ -1657,6 +1672,16 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
 
         });
 
+        var singleBookingsInRefMonth = data.singleBookings;
+/*
+        data.singleBookings.forEach(function(item,index){
+            if (item.refdate){
+                if (item.refdate.substring(0,6) == reportData[0].refmonth){
+                    singleBookingsInRefMonth.push(item)
+                }
+            }
+        });
+*/
         jsreport.render({
             template: {
                 content: '<head>\
@@ -1684,7 +1709,7 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
                     Balance per ' + reportData[0].refmonth + '\
                 </div>\
             </div>\
-                <table class="table table-hover balanceTable" style="width: 100%">\
+            <table class="table table-hover balanceTable" style="width: 100%">\
                 <thead>\
                     <tr><th scope="col">Monat</th><th scope="col">Arbeitszeit</th><th scope="col">Zusatzzeit</th><th scope="col">Sollzeit</th><th scope="col">Kontostand</th>\
                     </tr>\
@@ -1701,6 +1726,25 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
                     {{/for}}\
                 </tbody>\
             </table>\
+            <!-- <table class="table table-hover balanceTable" style="width: 100%; padding-top: 20px">\
+                <thead>\
+                    <tr><th scope="col">Monat</th><th scope="col">Arbeitszeit</th><th scope="col">Krankheit</th><th scope="col">Urlaub</th><th scope="col">Feiertag</th><th scope="col">Zeitausgleich</th>\
+                    </tr>\
+                </thead>\
+                <tbody>\
+                    {{for singleBookings}}\
+                        <tr>\
+                            <td scope="row">{{:refdate}}</td>\
+                            <td>{{:hrsWorked}}</td>\
+                            <td>{{:sickness}}</td>\
+                            <td>{{:vacation}}</td>\
+                            <td>{{:holidaytime}}</td>\
+                            <td>{{:auxAddTime}}</td>\
+                        </tr>\
+                    {{/for}}\
+                </tbody>\
+            </table>\
+            -->\
             <div style="overflow: hidden;">\
             <div class="top" style="width: 200px; margin-top: 30px; margin-right: 30px; float:left; "></div><div class="top" style="width: 200px; margin-top: 30px; margin--right: 30px;float:left;"></div>\
             </div>\
@@ -1717,7 +1761,8 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
             recipe: 'phantom-pdf'
             },
             data: {
-                "balance": reportData
+                "balance": reportData, 
+                "singleBookings": singleBookingsInRefMonth
             }
         }).then(function(out) {
 
@@ -1738,6 +1783,7 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
             .then(getNumberWorkingdaysFunction)
             .then(getAuxtimeFunction)
             .then(mergeAccBalance)
+            .then(mergeSingleBookings)
             .then(outFunction);
     }
     catch(err){

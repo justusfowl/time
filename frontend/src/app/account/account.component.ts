@@ -158,7 +158,9 @@ export class AccountComponent implements OnInit{
     this.vacHoursRemaining = this.formatter.formatNumberDecimals(currVacBalance,2);
   }
 
-  deleteRequest(row){
+  deleteRequest(row, element){
+
+    $(element.target).prop("disabled",true);
     
     var actualtimeid = row.actualtimeid; 
 
@@ -174,9 +176,11 @@ export class AccountComponent implements OnInit{
     this.dataHandlingService.addRequest(body).subscribe(
       data => {
         this.getRawBookings();
+        alert("Ihre Löschanfrage wurde entgegengenommen.")
       },
       error => {
         this.dataHandlingService.errorHandler(error);
+        alert("Ihre Löschanfrage wurde bereits entgegengenommen, bitte überprüfen Sie Ihre Übersicht der Anfragen.")
       });
   }
 

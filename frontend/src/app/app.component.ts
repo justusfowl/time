@@ -18,10 +18,7 @@ export class AppComponent implements OnInit{
   title = 'Time';
 
   username : any;
-  activityInterval : any;
-  activityRemainingTime: any;
-  logonDate : any;
-  logoffDate: any;
+
 
   ngOnInit(){
       console.log("init");
@@ -33,37 +30,12 @@ export class AppComponent implements OnInit{
 
      this.username = this.authorizationService.getUsername();
 
-     var logoffDate = new Date();
-     logoffDate.setMinutes(logoffDate.getMinutes() + 3);
-
-     this.logoffDate = logoffDate;
-     
-     this.activityInterval = setInterval(this.updateActivityTime.bind(this), 1000);
+    
     
   }
 
   
-  updateActivityTime(){
-
-    var now = new Date();
-
-    function millisToMinutesAndSeconds(millis) {
-      var minutes = Math.floor(millis / 60000);
-      var seconds = parseFloat(((millis % 60000) / 1000).toFixed(0));
-      return (seconds == 60 ? (minutes+1) + ":00" : minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
-    }
-    var timeDiff = (this.logoffDate.getTime() - now.getTime()); 
-
-    var displayTimeDiff = millisToMinutesAndSeconds(timeDiff);
-
-    this.activityRemainingTime = displayTimeDiff;  
-
-    if (timeDiff < 0 ){
-
-      this.logoutTimer();
-    }
-
-  }
+  
 
   checkIfAuth(){
     // return false if authenticated so that nav is not hidden
@@ -81,12 +53,6 @@ export class AppComponent implements OnInit{
     }else{
       return true; 
     }
-  }
-
-  logoutTimer(){
-
-    window.location.replace("http://intranet.praxis.local");
-
   }
 
   clickLogout(){

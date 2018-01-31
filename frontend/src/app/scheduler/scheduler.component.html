@@ -33,7 +33,7 @@
 
 <div class="container scheduleSettings">
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-3" hidden>
             <div class="btn-group" role="group" aria-label="Large button group">
                 <button type="button" class="btn btn-secondary active calendarModeBtn" data-val=1 (click)="setCalendarMode($event.target.dataset.val)">Überblick</button>
                 <button type="button" class="btn btn-secondary calendarModeBtn" data-val=2 (click)="setCalendarMode($event.target.dataset.val)">Detail</button>
@@ -44,7 +44,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-3 subfigure filter">
+        <div class="col-md-3 subfigure filter" hidden>
             Ansicht
         </div>
         <div class="col-md-4 subfigure filter">

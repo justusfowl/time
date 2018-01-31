@@ -16,7 +16,7 @@ export class StatComponent implements OnInit{
 
     public myDatePickerOptions: IMyDpOptions = {
         firstDayOfWeek: 'mo',
-        dateFormat: 'yyyy-mm-dd',
+        dateFormat: 'yyyymmdd',
     };
 
     constructor(
@@ -32,7 +32,19 @@ export class StatComponent implements OnInit{
 
     dateRefMonthReport : any;
     allUsers : any;
+    selectedUser: any; 
 
+    refDateFrom: any; 
+    refDateTo: any;
+
+    allDayBookings: any;
+    filteredDayBookings: any;
+    filteredDayBookingsTotals: any;
+    
+    dayBookingsRefDateFrom: any;  
+    dayBookingsRefDateTo: any; 
+
+    topEntries : any;
 
     ngOnInit(){
 
@@ -44,6 +56,26 @@ export class StatComponent implements OnInit{
        
         this.dateRefMonthReport = d.getFullYear().toString() + (d.getMonth() + 1).toString().padStart(2,"0");
 
+            
+        var today = new Date();
+        var todayAMonthAgo = new Date(today.getTime() - 30*24*60*60*1000); 
+
+        this.refDateFrom = { date: { year: todayAMonthAgo.getFullYear(), month: todayAMonthAgo.getUTCMonth()+1, day: todayAMonthAgo.getDate() } };
+        this.refDateTo = { date: { year: today.getFullYear(), month: today.getUTCMonth()+1, day: today.getDate() } };
+    
+        this.dayBookingsRefDateFrom = parseFloat(todayAMonthAgo.getFullYear().toString() + (todayAMonthAgo.getUTCMonth()+1).toString().padStart(2,"0") + todayAMonthAgo.getDate().toString().padStart(2,"0")) ;
+        this.dayBookingsRefDateTo = parseFloat(today.getFullYear().toString() + (today.getUTCMonth()+1).toString().padStart(2,"0") + today.getDate().toString().padStart(2,"0")) ;
+    
+        this.topEntries = 5;
+
+        this.filteredDayBookingsTotals = {
+            "hrsWorked": 0, 
+            "vacation": 0, 
+            "holidaytime":0, 
+            "sickness" : 0, 
+            "auxAddTime": 0
+        };
+        
     }
 
     onUserRowClick(user, mode){
@@ -57,6 +89,31 @@ export class StatComponent implements OnInit{
         console.log(this.dateRefMonthReport); 
     }
 
+    handleUserSelect(selUser){
+
+        console.log(this.selectedUser);
+        this.getSingleBookings();
+    }
+
+    onDateAccountChanged(event, src) {
+        if (src == "from"){
+          this.dayBookingsRefDateFrom = parseInt(event.formatted);  
+        }else if (src == "to"){
+          this.dayBookingsRefDateTo = parseInt(event.formatted); 
+        }else{
+          throw "No source defined for the onDateChanged Event"
+        }
+    
+        this.filterDayBookings();
+    
+        console.log('onDateChanged(): ', event.date, ' - jsdate: ', new Date(event.jsdate).toLocaleDateString(), ' - formatted: ', event.formatted, ' - epoc timestamp: ', event.epoc);
+        
+    }
+
+    handlePaginagingClick(){
+        this.topEntries = this.topEntries + 5;
+    }
+
     getReport(user, mode){
     
         let params = {
@@ -65,7 +122,8 @@ export class StatComponent implements OnInit{
             "sortDir" : "DESC", 
             filters: [
                 this.dataHandlingService.filterItem("year", "eq", this.dateRefMonthReport.substring(0,4)),
-                this.dataHandlingService.filterItem("refmonth", "le", this.dateRefMonthReport), ]
+                this.dataHandlingService.filterItem("refmonth", "le", this.dateRefMonthReport)
+            ]
         };
 
         this.dataHandlingService.getReport(params).subscribe(
@@ -97,4 +155,70 @@ export class StatComponent implements OnInit{
                 console.log(error);
             });
     }
+
+    getSingleBookings(){
+
+        var userId = this.selectedUser; 
+        let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC" };
+    
+        this.dataHandlingService.getSingleBookings(params).subscribe(
+          data => {
+              console.log(data);
+              this.allDayBookings = data;
+              this.filterDayBookings();
+          },
+          error => {
+            this.dataHandlingService.errorHandler(error);
+          });
+      }
+
+      filterDayBookings(){
+        var filteredBookings = []; 
+        var refDateFrom = this.dayBookingsRefDateFrom; 
+        var refDateTo = this.dayBookingsRefDateTo; 
+
+        var totals = {
+            "hrsWorked": 0, 
+            "vacation": 0, 
+            "holidaytime":0, 
+            "sickness" : 0, 
+            "auxAddTime": 0
+        };
+    
+        $.each( this.allDayBookings, function( index, value ){
+          if (parseInt(value.refdate) >= refDateFrom && parseInt(value.refdate) <= refDateTo){
+            filteredBookings.push(value);
+
+            if (value.hrsWorked){
+                totals.hrsWorked += parseFloat(value.hrsWorked)
+            }
+
+            if (value.vacation){
+                totals.vacation += parseFloat(value.vacation)
+            }
+
+            if (value.holidaytime){
+                totals.holidaytime += parseFloat(value.holidaytime)
+            }
+
+            if (value.sickness){
+                totals.sickness += parseFloat(value.sickness)
+            }
+
+            if (value.auxAddTime){
+                totals.auxAddTime += parseFloat(value.auxAddTime)
+            }
+
+
+          }
+            
+        }); 
+
+        console.log(JSON.stringify(filteredBookings));
+        console.log(totals);
+    
+        this.filteredDayBookings = filteredBookings; 
+        this.filteredDayBookingsTotals = totals;
+      }
+
 }

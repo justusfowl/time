@@ -5,9 +5,9 @@ Version 0.1.1.
 - Scheduler: Add display details/overview 
 - Add no-caching for GET requests to ensure actuality of displayed information
 - Timegroupplanner gets all users available for planning in scheduler view
-
+- auto logout after certain period of time 
 
 TODO: 
-- formatting of "nav" items on creation messes up panel buttons
 - adding users through the UI
 - daily runs of checks if it is a public holiday or not
+- Vacation hrs are not scalled for people starting within the year accordingly (e.g. only ~90% of vacation hrs available when starting in feb of the year )

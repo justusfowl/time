@@ -26,7 +26,7 @@ export class AccountComponent implements OnInit{
     private route: ActivatedRoute,
     private authService: AuthenticationService,
     private dataHandlingService : DataHandlingService, 
-    private formatter : FormatterService, 
+    public formatter : FormatterService, 
     private util: UtilService
   
   ){
@@ -36,6 +36,7 @@ export class AccountComponent implements OnInit{
   balance : any; 
   topEntries = 10; 
   vacHoursRemaining = 0; 
+  weightedContractVacHrs = 0; 
   filteredDayBookings : any;
   allDayBookings: any; 
   dayBookingsRefDateFrom: Number;
@@ -135,7 +136,8 @@ export class AccountComponent implements OnInit{
   }
 
   getCurrentVacationBalance(vacArr){
-    var currVacBalance = 0; 
+    var currVacBalance = 0;
+    var refYearWeightedVacHrs = 0; 
     $.each( vacArr, function( index, value ){
       if (value.refyear == new Date().getFullYear()){
 
@@ -153,9 +155,12 @@ export class AccountComponent implements OnInit{
         }
 
         currVacBalance += vacationHrsAvailable - vacationHrsTaken;
+
+        refYearWeightedVacHrs = value.weightedContractVacHrs;
       } 
     });
     this.vacHoursRemaining = this.formatter.formatNumberDecimals(currVacBalance,2);
+    this.weightedContractVacHrs = refYearWeightedVacHrs;
   }
 
   deleteRequest(row, element){

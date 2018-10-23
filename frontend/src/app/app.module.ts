@@ -6,7 +6,7 @@ import { HttpModule } from '@angular/http';
 import { AppComponent }            from './app.component';
 
 import { MyDatePickerModule } from 'mydatepicker';
-import {CalendarModule} from "ap-angular2-fullcalendar";
+import { FullCalendarModule } from 'ng-fullcalendar';
 import { MultiselectDropdownModule } from 'angular-2-dropdown-multiselect';
 
 import { LoginComponent  }   from './login/index';
@@ -17,7 +17,7 @@ import { SchedulerComponent }   from './scheduler/scheduler.component';
 import { AdminComponent }   from './admin/admin.component';
 import { PageNotFoundComponent }   from './notfound/notfound.component';
 import { StatComponent }   from './stat/stat.component';
-
+import { CalendarComponent }   from './calendar/calendar.component';
 
 
 import { AuthenticationService, DataHandlingService, FormatterService, UtilService } from './_services/index';
@@ -50,7 +50,7 @@ const appRoutes: Routes = [
     FormsModule, 
     ReactiveFormsModule,
     MyDatePickerModule, 
-    CalendarModule,
+    FullCalendarModule,
     MultiselectDropdownModule
   ],
   declarations: [
@@ -58,6 +58,7 @@ const appRoutes: Routes = [
     RecordComponent,
     RequestComponent,
     SchedulerComponent,
+    CalendarComponent,
     StatComponent,
     AdminComponent,
     

@@ -5,23 +5,20 @@ var jsreport = require('jsreport');
 var fs = require('fs')
 var logger = require('./log.js'); 
 
+const config = require("./config");
+
+const cors = require('cors');
+
 // middleware for logging in expressJS
 var morgan = require('morgan')
 
 // define logger for express application
 app.use(morgan("combined", { "stream": logger.stream }));
 
-let env;
-if (process.env.MODE == "prod") {
-  var port = 80;
-} else {
-  var port = process.env.PORT || 3000;
-}
-
 const root_path = path.resolve(".."); 
 
-var server = app.listen(port, function() {
-  logger.info('TIME application server listening on port ' + port);
+var server = app.listen(config.webPort, function() {
+  logger.info('TIME application server listening on port ' + config.webPort);
 });
 
 app.use(express.static(root_path + "/frontend/dist"));

@@ -21,7 +21,7 @@ export class RequestComponent implements OnInit{
       private route: ActivatedRoute, 
       private authService: AuthenticationService,
       private dataHandlingService : DataHandlingService, 
-      private formatter : FormatterService, 
+      public formatter : FormatterService, 
       private util: UtilService
     ){
 
@@ -145,7 +145,7 @@ export class RequestComponent implements OnInit{
       });
   }
 
-  addVacRequest(requestcatid){
+  addVacRequest(){
     
     var userId = this.authService.getUserId(); 
     var body = {"userid" : userId}
@@ -198,7 +198,7 @@ export class RequestComponent implements OnInit{
     this.topEntries = this.topEntries + 5;
   }
 
-  dirBtnClick(event,i){
+  dirBtnClick(event){
     this.directionAdd = event.target.dataset.val; 
   }
 

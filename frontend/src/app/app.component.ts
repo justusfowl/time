@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthenticationService } from 'app/_services/index';
+import { AuthenticationService } from '../app/_services/index';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +11,7 @@ export class AppComponent implements OnInit{
 
   constructor (
               private router: Router, 
-              private authorizationService : AuthenticationService 
+              public authorizationService : AuthenticationService 
             ){
   }
 

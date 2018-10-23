@@ -1,17 +1,22 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers, Response, RequestOptions } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/map'
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { DataHandlingService } from '../_services/datahandling.service';
+import { environment as ENV } from '../../environments/environment';
 
 @Injectable()
 export class AuthenticationService {
     constructor(
         private http: Http,
         private dataHandlingService : DataHandlingService,
-    ) { }
+    ) { 
+
+        this.expiryPeriod = ENV.jwtExpirySeconds / 60; // expiryPeriod loaded in seconds and converted into minutes
+    }
 
     public username : any; 
+    public expiryPeriod : number; 
     public activityInterval : any;
     public activityRemainingTime: any;
     public logonDate : any;
@@ -51,7 +56,7 @@ export class AuthenticationService {
         console.log("login in auth service")
         
         return this.http.post(this.dataHandlingService.BaseURL + '/api/auth/login', JSON.stringify(body), options)
-            .map((response: Response) => {
+            .pipe(map((response: Response) => {
                 // login successful if there's a jwt token in the response
                 let user = response.json();
                 console.log(user);
@@ -73,7 +78,7 @@ export class AuthenticationService {
                     //var devUserId = "6";
                     //localStorage.setItem('currentUserId', devUserId);
                 }
-            });
+            }));
     }
 
     logout() {
@@ -95,7 +100,7 @@ export class AuthenticationService {
         var logoffDate = new Date(); 
 
         //define the period after which auto-logout happens in minutes 
-        logoffDate.setMinutes(logoffDate.getMinutes() + 3);
+        logoffDate.setMinutes(logoffDate.getMinutes() + this.expiryPeriod );
     
         this.logoffDate = logoffDate;
         

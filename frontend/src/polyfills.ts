@@ -33,6 +33,7 @@
  import 'core-js/es6/map';
  import 'core-js/es6/weak-map';
  import 'core-js/es6/set';
+ import 'core-js/es6/string';
 
 /** IE10 and IE11 requires the following for NgClass support on SVG elements */
 // import 'classlist.js';  // Run `npm install --save classlist.js`.
@@ -43,7 +44,7 @@
 
 /** Evergreen browsers require these. **/
 // Used for reflect-metadata in JIT. If you use AOT (and only Angular decorators), you can remove.
-import 'core-js/es7/reflect';
+
 
 
 /**
@@ -64,22 +65,4 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
-
-if (!String.prototype.padStart) {
-    String.prototype.padStart = function padStart(targetLength,padString) {
-        targetLength = targetLength>>0; //floor if number or convert non-number to 0;
-        padString = String((typeof padString !== 'undefined' ? padString : ' '));
-        if (this.length > targetLength) {
-            return String(this);
-        }
-        else {
-            targetLength = targetLength-this.length;
-            if (targetLength > padString.length) {
-                padString += padString.repeat(targetLength/padString.length); //append to original to ensure we are longer than needed
-            }
-            return padString.slice(0,targetLength) + String(this);
-        }
-    };
-}
-
 

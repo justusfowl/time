@@ -131,23 +131,31 @@ mysqlInstance.prototype.getContractVacationHrs = function (input, cb) {
     var userid = parseInt(input.userid);
 
     var sql = "SELECT\
-    count(*) as cntDays,\
-    year(date) as refyear,\
-    userid,\
-    vacationhrsperday\
-    from(\
-        SELECT\
-            CAST(date as datetime) as date,\
-            vacationtbl.*\
-        from tbllookupdate as dates\
-        LEFT JOIN (\
-            SELECT * FROM time.tblvacation\
-        ) as vacationtbl ON\
-        vacationtbl.validfrom < dates.date and\
-        vacationtbl.validto > dates.date\
-    ) as tbl\
-    where userid = " + userid + "\
-    group by vacationhrsperday, year(date), userid;"
+        count(*) as cntDays,\
+        year(date) as refyear,\
+        userid,\
+        y.yearDays, \
+        (count(*)/y.yearDays)*vacationhrsperday as vacationhrsperday\
+        from(\
+            SELECT\
+                CAST(date as datetime) as date,\
+                vacationtbl.*\
+            from tbllookupdate as dates\
+            LEFT JOIN (\
+                SELECT * FROM time.tblvacation\
+            ) as vacationtbl ON\
+            vacationtbl.validfrom < dates.date and\
+            vacationtbl.validto > dates.date\
+        ) as tbl\
+        left join(\
+            SELECT \
+            count(*) as yearDays, \
+            year(date) as refyear\
+            FROM time.tbllookupdate\
+            GROUP BY YEAR(date)\
+        ) as y on year(tbl.date) = y.refyear\
+        where userid = " + userid + "\
+        group by vacationhrsperday, year(date), userid;"
 
     this.con.query(sql, cb );
 }

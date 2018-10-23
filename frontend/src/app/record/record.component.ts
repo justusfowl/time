@@ -54,12 +54,12 @@ export class RecordComponent implements OnInit, OnDestroy{
     clearInterval(this.updateInterval);
   }
 
-  dirBtnClick(event,i){
+  dirBtnClick(event ){
     let clickedDir = event.target.dataset.val; 
     this.recordDir = clickedDir;
   }
 
-  recordBtnClick(event, i){
+  recordBtnClick(event){
     this.addActualTime();
   }
 

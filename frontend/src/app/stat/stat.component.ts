@@ -24,7 +24,7 @@ export class StatComponent implements OnInit{
         private route: ActivatedRoute, 
         private authService: AuthenticationService,
         private dataHandlingService : DataHandlingService, 
-        private formatter : FormatterService, 
+        public formatter : FormatterService, 
         private util: UtilService
         ){
     

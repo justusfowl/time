@@ -163,7 +163,7 @@ router.post('/login', function(req, res) {
      var promise = new Promise(function(resolve, reject){
         // if auth = true
         var token = jwt.sign(data, config.secret, {
-          expiresIn: config.tokenValidSeconds // expires in 90 secs
+          expiresIn: config.tokenValidSeconds
         });
 
         // return the information including token as JSON

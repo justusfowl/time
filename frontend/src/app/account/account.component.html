@@ -5,18 +5,18 @@
         {{vacHoursRemaining}}
     </div>
     <div class="col-md-3 accKeyFigure">
-            {{formatter.formatNumberDecimals(hrsWorkedThisMonth,2)}}
+        {{formatter.formatNumberDecimals(hrsWorkedThisMonth,2)}}
     </div>
     <div class="col-md-3 accKeyFigure">
-            {{formatter.formatNumberDecimals(timehrsPerMonthThisMonth,2)}}
+        {{formatter.formatNumberDecimals(timehrsPerMonthThisMonth,2)}}
     </div>
     <div class="col-md-3 accKeyFigure">
-            {{calculateTotalBalance()}}
+        {{calculateTotalBalance()}}
     </div>
 </div>
 <div class="row">
     <div class="col-md-3 accSubtitle">
-        Resturlaub in Stunden (aktuelles Kalenderjahr)
+        Resturlaub in Stunden (aktuelles Kalenderjahr, Gesamtpensum: {{formatter.formatNumberDecimals(weightedContractVacHrs,2)}} Std)
     </div>
     <div class="col-md-3 accSubtitle">
         Iststunden (Arbeits- + Zusatzzeiten) im aktuellen Monat

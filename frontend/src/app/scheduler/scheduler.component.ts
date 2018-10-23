@@ -2,7 +2,7 @@
 import { Component, OnInit, ViewChildren, ViewChild  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService,  DataHandlingService, FormatterService, UtilService } from '../_services/index';
-import { CalendarComponent } from "ap-angular2-fullcalendar";
+import { CalendarComponent } from 'ng-fullcalendar';
 import { IMultiSelectOption, IMultiSelectSettings  } from 'angular-2-dropdown-multiselect';
 
 @Component({
@@ -58,6 +58,8 @@ export class SchedulerComponent implements OnInit{
 
   calendarMode: number; 
 
+  events : any;
+
   onCalendarInit(initialized: boolean) {
     console.log('Calendar initialized');
   }
@@ -72,6 +74,12 @@ export class SchedulerComponent implements OnInit{
     this.selectedMode = 1;
 
     this.isTimePlanner = this.authService.getIsTimePlanner();
+
+    let de = new Date(); 
+    let defaultDateTo = (new Date()).toISOString().substring(0,10);
+    let defaultDateFrom = new Date(de.setDate(de.getDate() -7)).toISOString().substring(0,10);
+
+    this.getPlantime(defaultDateFrom, defaultDateTo,null, this.setEventData.bind(this));
     
     this.calendarOptions = {
       fixedWeekCount : false,
@@ -93,11 +101,11 @@ export class SchedulerComponent implements OnInit{
       maxTime: "19:00:00",
       scrollTime: "06:30:00",
       slotDuration: "00:15:00",
-      defaultDate: (new Date()).toISOString().substring(0,10),
+      defaultDate: defaultDateTo,
       editable: this.isTimePlanner,
       eventLimit: true, // allow "more" link when too many events
       dayClick: this.handleCalenderClicked.bind(this),
-      events: this.getPlantime.bind(this), 
+      events: [], 
       eventResize: this.updatePlantime.bind(this),
       eventDrop: this.updatePlantime.bind(this), 
       eventClick: this.eventClick.bind(this)
@@ -108,6 +116,10 @@ export class SchedulerComponent implements OnInit{
       $(this).addClass("active");
     });
 
+  }
+
+  setEventData(data){
+    this.events = data;
   }
 
   setCalendarMode(mode){
@@ -180,11 +192,12 @@ export class SchedulerComponent implements OnInit{
 
     if (this.selectedMode == 2){
       this.myCalendar.fullCalendar("refetchEvents");
+      this.getPlantime(null, null, null, this.setEventData.bind(this));
     }
 
   }
 
-  onChange() {
+  onChange(evt) {
       var component = this;
       this.filters.length = 0;
       this.optionsModel.forEach(function(item){
@@ -193,6 +206,11 @@ export class SchedulerComponent implements OnInit{
       this.myCalendar.fullCalendar("refetchEvents");
   }
 
+  eventClick2(event){
+
+    console.log(event)
+  
+  }
   
   eventClick(event, jsEvent, view){
     // allow item clicking only for future events and within mode = 1 for planning purposes
@@ -210,33 +228,35 @@ export class SchedulerComponent implements OnInit{
     var body = {"userid" : this.selectedUser.userid}
     body["plantimeStart"] = this.planDate + " " + this.planTimeStart;
     body["plantimeEnd"] = this.planDate + " " + this.planTimeEnd;
+
     this.dataHandlingService.addPlantime(body).subscribe(
         data => {
-          this.planDate = null; 
-          this.planTimeEnd = null; 
-          this.planTimeStart = null; 
+          this.planDate = null;
+          this.planTimeEnd = null;
+          this.planTimeStart = null;
           this.myCalendar.fullCalendar("refetchEvents");
         },
         error => {
           this.dataHandlingService.errorHandler(error);
         });
-
   }
 
   getPlantime(start, end, timezone, callback){
 
       if (this.selectedMode == 1){
-        var userId = this.authService.getUserId(); 
-        let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", "startDate": start.format().substring(0,10) , 
-        "endDate": end.format().substring(0,10), filters: this.filters};
+
+        var userId = this.authService.getUserId();
+
+        let params = { "userid": userId, "sortBy": "refdate", "sortDir" : "DESC", "startDate": start , "endDate": end, filters: this.filters};
     
         this.dataHandlingService.getPlantime(params).subscribe(
           data => { 
             callback(data);
           },
           error => {
-              this.dataHandlingService.errorHandler(error);
+            this.dataHandlingService.errorHandler(error);
           });
+
       }
       else if (this.selectedMode == 2){
         if (this.selectedUser.userid != null){

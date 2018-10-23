@@ -56,7 +56,7 @@
 
 
 <div class="container primeContent">
-    <angular2-fullcalendar [options]="calendarOptions" (initialized)="onCalendarInit($event)"></angular2-fullcalendar>
+    <ng-fullcalendar [options]="calendarOptions" [(eventsModel)]="events" (dayClick)="eventClick2($event.detail)" (initialized)="onCalendarInit($event)"></ng-fullcalendar>
 </div>
 
 

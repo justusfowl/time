@@ -11,5 +11,6 @@ export const environment = {
       return this.baseProtocol + "://" + this.baseUrl + ":" + this.basePort;
     }
   }, 
-  jwtExpirySeconds : 800
+  jwtExpirySeconds : 800, 
+  appVersion: require('../../package.json').version
 };

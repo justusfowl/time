@@ -13,7 +13,7 @@
                 <option *ngFor="let u of allUsers" [ngValue]="u">{{u.username}}</option>
             </select>
         </div>
-        <div class="col-md-4 deleteItem hide">
+        <div class="col-md-4 deleteItem" *ngIf="selectedMode == 1 && selectId">
             <button (click)="deletePlantime(this.selectId)" type="button">Slot löschen?</button>
         </div>
     </div>
@@ -24,7 +24,7 @@
         <div class="col-md-3 subfigure">
             Nutzer
         </div>
-        <div class="col-md-4 subfigure deleteItem hide">
+        <div class="col-md-4 subfigure deleteItem" *ngIf="selectedMode == 1 && selectId">
             Löschen
         </div>
     </div>
@@ -39,7 +39,7 @@
                 <button type="button" class="btn btn-secondary calendarModeBtn" data-val=2 (click)="setCalendarMode($event.target.dataset.val)">Detail</button>
             </div>
         </div>
-        <div class="col-md-4 filter">
+        <div class="col-md-4 filter" *ngIf="selectedMode == 1">
             <ss-multiselect-dropdown [options]="allUsers" [settings]="mySettings" [(ngModel)]="optionsModel" (ngModelChange)="onChange($event)"></ss-multiselect-dropdown>
         </div>
     </div>
@@ -47,7 +47,7 @@
         <div class="col-md-3 subfigure filter" hidden>
             Ansicht
         </div>
-        <div class="col-md-4 subfigure filter">
+        <div class="col-md-4 subfigure filter" *ngIf="selectedMode == 1">
             Filtern
         </div>
     </div>
@@ -56,7 +56,12 @@
 
 
 <div class="container primeContent">
-    <ng-fullcalendar [options]="calendarOptions" [(eventsModel)]="events" (dayClick)="eventClick2($event.detail)" (initialized)="onCalendarInit($event)"></ng-fullcalendar>
+    <ng-fullcalendar [options]="calendarOptions" [(eventsModel)]="events"
+        (eventClick)="eventClick($event)"
+        (select)="select($event)"
+        (eventDrop)="updatePlantime($event.detail)"
+        (eventResize)="updatePlantime($event.detail)"
+        (dayClick)="handleCalenderClicked($event.detail)" (initialized)="onCalendarInit($event)"></ng-fullcalendar>
 </div>
 
 

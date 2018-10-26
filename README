@@ -1,5 +1,12 @@
 This is the Repo of the timesheet application of ffa
 
+Version 0.2.1. 
+- Version: Upgrade Angular version from 4 to 7
+- Scheduler: Bugfixes and replacement of fullcalender component
+- Environments: Modify loading of env files for both frontend / backend
+- Vacation hrs are now scalled for people starting within the year accordingly (e.g. only ~90% of vacation hrs available when starting in feb of the year )
+
+
 Version 0.1.1. 
 - Account: Display actual time including aux-hours
 - Scheduler: Add display details/overview 
@@ -10,4 +17,3 @@ Version 0.1.1.
 TODO: 
 - adding users through the UI
 - daily runs of checks if it is a public holiday or not
-- Vacation hrs are not scalled for people starting within the year accordingly (e.g. only ~90% of vacation hrs available when starting in feb of the year )

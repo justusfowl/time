@@ -151,8 +151,12 @@ html, body {
   
 }
 
-.slotSelected{
+/deep/ .slotSelected{
   background-color:red !important; 
+}
+
+.app-version{
+  font-size: 14px; 
 }
 
 /* LOGIN */

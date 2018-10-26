@@ -2,7 +2,7 @@ import { Component, OnInit  } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService,  DataHandlingService, FormatterService, UtilService } from '../_services/index';
 import {IMyDpOptions,IMyDateModel} from 'mydatepicker';
-
+import { environment as ENV } from '../../environments/environment';
 
 
 @Component({
@@ -18,6 +18,9 @@ export class AdminComponent implements OnInit{
         dateFormat: 'yyyy-mm-dd',
     };
 
+    public appVersion : any;
+    public environ : any;
+
     constructor(
         private router: Router, 
         private route: ActivatedRoute, 
@@ -26,6 +29,13 @@ export class AdminComponent implements OnInit{
         private formatter : FormatterService, 
         private util: UtilService
         ){
+
+            this.appVersion = ENV.appVersion;
+            if (ENV.production){
+                this.environ = "prod";
+            }else{
+                this.environ = "dev";
+            }
     
         }
 
@@ -51,6 +61,8 @@ export class AdminComponent implements OnInit{
         this.getUserInfo();
         this.getTimeRequests();
         this.getVacRequests();
+
+
     }
 
     getUserInfo(){

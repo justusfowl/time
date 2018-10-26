@@ -103,6 +103,8 @@ export class SchedulerComponent implements OnInit{
       slotDuration: "00:15:00",
       defaultDate: defaultDateTo,
       editable: this.isTimePlanner,
+      selectable: true,
+      selectHelper: true,
       eventLimit: true, // allow "more" link when too many events
       dayClick: this.handleCalenderClicked.bind(this),
       events: [], 
@@ -154,12 +156,12 @@ export class SchedulerComponent implements OnInit{
     }
   }
 
-  handleCalenderClicked(date, jsEvent, view) {
+  handleCalenderClicked(date) {
 
     $('#modalAddSlot').modal('show');
-    var dateFormatted = date.format(); 
+    var dateFormatted = new Date(date.date._d).toISOString();
     this.planDate = dateFormatted.substring(0,10);
-    this.planTimeStart = dateFormatted.substring(dateFormatted.indexOf("T")+1,dateFormatted.length);
+    this.planTimeStart = dateFormatted.substring(dateFormatted.indexOf("T")+1,dateFormatted.indexOf("."));
 
     $('#planDateStr').html(this.planDate);
     $('#timeSlotFrom').val(this.planTimeStart);
@@ -176,12 +178,12 @@ export class SchedulerComponent implements OnInit{
 
     if (this.selectedMode == 1){
       $('.filter').removeClass("hide");
-      this.myCalendar.fullCalendar("refetchEvents");
+      this.refetchEvents(); 
 
     }else if (this.selectedMode == 2){
       $('.filter').addClass("hide");
       if (this.selectedUser != null || typeof(this.selectedUser) == "undefined"){
-        this.myCalendar.fullCalendar("refetchEvents");
+        this.refetchEvents(); 
       }
     }else {
       console.log("Invalid mode")
@@ -191,9 +193,19 @@ export class SchedulerComponent implements OnInit{
   handleUserCompareSelect(event){
 
     if (this.selectedMode == 2){
-      this.myCalendar.fullCalendar("refetchEvents");
-      this.getPlantime(null, null, null, this.setEventData.bind(this));
+      this.refetchEvents();
     }
+
+  }
+
+  refetchEvents(){ 
+
+    let view = this.myCalendar.fullCalendar("getView"); 
+
+    let startDate = new Date(view.intervalStart._d).toISOString().substring(0,10);
+    let endDate = new Date(view.intervalEnd._d).toISOString().substring(0,10);
+
+    this.getPlantime(startDate, endDate, null, this.setEventData.bind(this));
 
   }
 
@@ -203,22 +215,49 @@ export class SchedulerComponent implements OnInit{
       this.optionsModel.forEach(function(item){
         component.filters.push(component.dataHandlingService.filterItem("userid", "eq", item));
       });
-      this.myCalendar.fullCalendar("refetchEvents");
+      this.refetchEvents();
   }
 
-  eventClick2(event){
+  select(event) {
 
-    console.log(event)
-  
+    let evt = event.detail; 
+
+    var startDate = evt.start.format();
+    var endDate = evt.end.format();
+
+    this.planDate = startDate.substring(0,10);
+    this.planTimeStart = startDate.substring(startDate.indexOf("T")+1,startDate.length);
+    this.planTimeEnd = endDate.substring(endDate.indexOf("T")+1,endDate.length);
+
+    $('#planDateStr').html(this.planDate);
+    $('#timeSlotFrom').val(this.planTimeStart);
+
+    $('#modalAddSlot').modal('show');
   }
   
-  eventClick(event, jsEvent, view){
+  eventClick(event){
+
+    let evtDate = new Date(event.detail.event.end.format());
+
     // allow item clicking only for future events and within mode = 1 for planning purposes
-    if (event.end > new Date() && this.selectedMode == 1){
-      $(".deleteItem").toggleClass("hide");
-      this.selectId = event.id; 
-      var itemSelected = $(jsEvent.target).parent();
-      $(jsEvent.target).parent().addClass('slotSelected');
+    if (evtDate > new Date()){
+
+      if(this.selectedMode == 1){
+
+        let clickedId = event.detail.event.id; 
+
+        if (this.selectId != clickedId){
+          $('.slotSelected').removeClass('slotSelected'); 
+          this.selectId = clickedId; 
+        }else{
+          this.selectId = null;
+        } 
+        
+        $(event.detail.jsEvent.target).parent().toggleClass('slotSelected');
+      }else{
+        console.log("Deleting of items can only be done within the respective mode.");
+      }
+     
     }else{
       alert("Deleting of items can only be done for future events.");
     }
@@ -234,12 +273,19 @@ export class SchedulerComponent implements OnInit{
           this.planDate = null;
           this.planTimeEnd = null;
           this.planTimeStart = null;
-          this.myCalendar.fullCalendar("refetchEvents");
+          this.refetchEvents();
         },
         error => {
           this.dataHandlingService.errorHandler(error);
         });
   }
+  /**
+   * 
+   * @param start Starting date in ISO String format without time -> 2018-12-31
+   * @param end Ending date in ISO String format without time -> 2018-12-31
+   * @param timezone 
+   * @param callback 
+   */
 
   getPlantime(start, end, timezone, callback){
 
@@ -276,7 +322,10 @@ export class SchedulerComponent implements OnInit{
       }
   };
 
-  updatePlantime(event, delta, revertFunc){
+
+  updatePlantime(evt){
+
+    let event = evt.event;
 
     var planTimeId = parseInt(event.id); 
     var planTimeStart = event.start.format(); 
@@ -288,6 +337,7 @@ export class SchedulerComponent implements OnInit{
 
     this.dataHandlingService.updatePlantime(body).subscribe(
         data => {
+          console.log("plantTime Event with ID " + planTimeId + " has been updated successfully")
           return;
         },
         error => {
@@ -300,7 +350,7 @@ export class SchedulerComponent implements OnInit{
     this.dataHandlingService.deletePlantime(body).subscribe(
         data => {
           this.selectId = null; 
-          this.myCalendar.fullCalendar("refetchEvents");
+          this.refetchEvents();
         },
         error => {
           this.dataHandlingService.errorHandler(error);

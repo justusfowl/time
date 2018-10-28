@@ -131,6 +131,13 @@ mysqlInstance.prototype.getContractVacationHrs = function (input, cb) {
     var userid = parseInt(input.userid);
 
     var sql = "SELECT\
+    sum(cntDays) as cntDays, \
+    refyear,  \
+    userid,  \
+    yearDays,  \
+    sum(vacationhrsperday)  as vacationhrsperday\
+    from ( \
+        SELECT\
         count(*) as cntDays,\
         year(date) as refyear,\
         userid,\
@@ -155,7 +162,9 @@ mysqlInstance.prototype.getContractVacationHrs = function (input, cb) {
             GROUP BY YEAR(date)\
         ) as y on year(tbl.date) = y.refyear\
         where userid = " + userid + "\
-        group by vacationhrsperday, year(date), userid;"
+        group by vacationhrsperday, year(date), userid\
+    ) as t\
+    GROUP BY refyear, userid, yearDays;"
 
     this.con.query(sql, cb );
 }

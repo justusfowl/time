@@ -10,6 +10,12 @@
             "request": "launch",
             "name": "Programm starten",
             "program": "${workspaceFolder}\\server.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "TEST starten",
+            "program": "${workspaceFolder}\\test.js"
         }
     ]
 }

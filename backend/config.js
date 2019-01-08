@@ -4,12 +4,7 @@
 require('dotenv').config();
 
 let env = process.env.NODE_ENV || 'development'; 
-let port; 
-if (env == "prod") {
-  port = 80;
-} else {
-  port = process.env.PORT || 3000;
-}
+let port = process.env.WEB_PORT || 3000;
 
 module.exports = {
     env : env,

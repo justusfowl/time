@@ -23,7 +23,67 @@ var j = schedule.scheduleJob('16 * * * * *', function(){
 });
 */
 
-function checkForHoliday(inputDate){
+router.post("/check", function(req, res, next ){
+    var db = new mysqlInstance(); 
+    var props = parseBasicProps(req);
+
+    var data = {};
+    data.db = db;
+    data.req = req;
+    data.res = res;
+    data.props= props;
+
+    data.dateVacStart = req.query.dateVacStart;
+    data.dateVacEnd = req.query.dateVacEnd;
+
+    data.holidayDate = req.query.holidayDate;
+
+    var outFunction = function (data){
+
+        (async () => {
+
+            for (var i=0; i<data.userInfo.length; i++){
+            
+                let sessionInfo =  await getUsersVacValueRESTCall(1, "20190101", "20190101").catch(err => {
+                    console.log("error");
+                    console.log(err);
+                });
+
+                console.log(sessionInfo);
+
+            }
+
+           
+            
+            
+        })();
+
+
+        // close connection to database;
+        db.con.end();
+
+        res.status(200).send(data);
+
+        return true;
+
+    };
+
+    data.outFunction = outFunction;
+   
+    try{
+        getUserInfoFunction(data).then(outFunction);
+    }
+    catch(err){
+        db.con.end();
+        res.status(500).send(err);
+        logger.info(err);
+    }
+});
+
+
+router.post("/holidayCheck", function (req, res, next){
+
+    var inputDate = "20190101";
 
     var db = new mysqlInstance();
 
@@ -96,13 +156,17 @@ function checkForHoliday(inputDate){
     try{
         getWorkingdaysFunction(data)
             .then(getUserInfoFunction)
+
             .then(iterateFunction)
+            .then(resp => {
+                req.json(resp);
+            })
     }
     catch(err){
         logger.info(err);
     }
-        
-}
+
+})
 
 // API Endpoints
 
@@ -431,7 +495,7 @@ var getUserInfoFunction = function(data) {
     var req = data.req; 
     var res = data.res;
 
-    var input = data.input; 
+    var input = data.input || {}; 
 
     var promise = new Promise(function(resolve, reject){
 
@@ -606,7 +670,7 @@ router.get('/getAccountBalance', VerifyToken, function(req, res, next) {
     data.req = req;
     data.res = res;
     data.props= props;
-    data.input = {"userid" : req.query.userid}
+    data.input = {"userid" : req.query.userid};
 
     var outFunction = function (data){
 
@@ -671,7 +735,7 @@ var decideUponUserCategory = function(data){
 
     var cntDays = vacationWorkingDays.length; 
 
-    var lastCntFullWeek = (parseInt(cntDays/5) * 5); 
+    var lastCntFullWeek = (parseInt(cntDays/5) * 5);
 
     var addFlagFullWeek = function (row, i, v){ 
         if (i <= lastCntFullWeek-1){
@@ -706,6 +770,7 @@ var decideUponUserCategory = function(data){
             delete data.input.betweenStartDate;
 
             getRelevantWorkingdaysFunction(data).then(getTimePairsFunction).then(mergeVacationValue).then(data.outFunction);
+
         }
         catch(err){
             db.con.end();
@@ -767,10 +832,25 @@ var mergeVacationValue = function (data){
         var requestedDate = new Date();
         var date13weeksAgo = new Date(new Date() - (13 * 7 * 24 * 60 * 60 * 1000));
 
+        // if there are at least data for 7 weeks, take the mean, otherwise take average of weekly working pensum
+        var date6weeksAgo = new Date(new Date() - (6 * 7 * 24 * 60 * 60 * 1000));
+        var date7weeksAgo = new Date(new Date() - (7 * 7 * 24 * 60 * 60 * 1000));
+
         var workingDaysLast13weeks = _.filter(workingDays, function(day){
             return parseInt(day.refdate) < parseInt(getLocalRefDateFromDate(requestedDate)) && 
             parseInt(day.refdate) > parseInt(getLocalRefDateFromDate(date13weeksAgo));
         });
+
+        var timePairsInLast7Weeks = _.filter(timePairs, function(day){
+            return parseInt(day.refdate) < parseInt(getLocalRefDateFromDate(date6weeksAgo)) && 
+            parseInt(day.refdate) > parseInt(getLocalRefDateFromDate(date7weeksAgo));
+        });
+        
+        var flagHasDataForMeanComputation = true;
+
+        if (timePairsInLast7Weeks.length == 0){
+            flagHasDataForMeanComputation = false;
+        }
 
         var timePairsInTimeRange = _.filter(timePairs, function(row){
             return parseInt(row.refdate) < parseInt(getLocalRefDateFromDate(requestedDate)) && 
@@ -812,7 +892,7 @@ var mergeVacationValue = function (data){
             };
             outObj["day"] = group[0].day; 
             outObj["weekday"] = parseInt(val); 
-            outObj["avgHrsWorked"] = _.meanBy(group, "hrsWorked")
+            outObj["avgHrsWorked"] = _.meanBy(group, "hrsWorked");
 
             return outObj;
         });
@@ -835,7 +915,17 @@ var mergeVacationValue = function (data){
                 outObj["avgHrsWorked"] = userInfo[0].timehrsperweek / 5; 
             }else{
                 outObj["flagFullWeek"] = false;
-                outObj["avgHrsWorked"] =  groupsAvgByWeekDay[row.weekday][0].avgHrsWorked
+
+                // if there is not enough data for the mean computation amongst the past 13 weeks
+                // take weekly average of timehrsperweek
+
+                if (flagHasDataForMeanComputation){
+                    outObj["avgHrsWorked"] =  groupsAvgByWeekDay[row.weekday][0].avgHrsWorked;
+                }else{
+                    outObj["avgHrsWorked"] =  userInfo[0].timehrsperweek / 5;
+                    
+                }
+                
             }
 
             return outObj;
@@ -843,7 +933,22 @@ var mergeVacationValue = function (data){
 
         var output = {}; 
         output["vacationOverview"] = joinVacationAvgHrs;
-        output["vacationValues"] = outArray; 
+        
+
+        if (!flagHasDataForMeanComputation){
+            output["message"] = "Computation of day value was undertaken by simple average, since for 13-week-mean, not enough data could be retrieved.";
+        }
+
+        outArray.forEach(element => {
+            element["valid13WeekComputation"] = flagHasDataForMeanComputation;
+
+            if (!flagHasDataForMeanComputation){
+                element["averageDayValueTimeHrsWeekly"] = userInfo[0].timehrsperweek / 5;
+            }
+
+        });
+
+        output["vacationValues"] = outArray;
 
         data.output = output; 
         resolve(data);  
@@ -2106,6 +2211,10 @@ function getLocalRefDateFromDate(inDate){
 
 
     
-module.exports = router;
+module.exports = 
+{
+    router, 
+    getUserInfoFunction
+};
 
 // checkForHoliday(null);

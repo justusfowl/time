@@ -218,6 +218,20 @@ mysqlInstance.prototype.getWorkingdays = function (input, cb, flagBeforeToday = 
 
 
 
+
+
+mysqlInstance.prototype.getIfDateIsHolidayAndWorkingday = function (input, cb) {
+
+    var db = this; 
+    var refDate = input.refDate;
+    
+    var sql = 'SELECT * FROM time.tbllookupholidays \
+    where replace(refdate, "-","") = ' + refDate + ' and (weekdayInt >= 1 AND weekdayInt <=5);'
+
+    this.con.query(sql, cb );
+
+}
+
 mysqlInstance.prototype.getNumberWorkingdays = function (input, cb) {
 
     var db = this; 
@@ -584,6 +598,32 @@ mysqlInstance.prototype.addAuxTime = function (valueArr, cb) {
     `auxtimeto`,\
     `cattimeid`,\
     `requestid`)\
+    VALUES ?;";
+    
+    this.con.query(sql, [valueArr], cb);
+
+};
+
+mysqlInstance.prototype.purgeHolidayAuxTimeForDate = function (inputDate, cb) {
+    
+    var sql = "DELETE FROM time.tblauxtime \
+    where cattimeid = 3 and date(auxtimefrom) = ?;";
+    
+    this.con.query(sql, [inputDate], cb);
+
+};
+
+mysqlInstance.prototype.addHolidayLookupDates = function (valueArr, cb) {
+    
+    
+
+    var sql = "INSERT INTO `time`.`tbllookupholidays`\
+    (`weekday`,\
+    `weekdayInt`,\
+    `date`,\
+    `holiday`,\
+    `state`, \
+    `refdate`)\
     VALUES ?;";
     
     this.con.query(sql, [valueArr], cb);

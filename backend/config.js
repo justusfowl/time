@@ -9,6 +9,7 @@ let port = process.env.WEB_PORT || 3000;
 module.exports = {
     env : env,
     webPort : port,
+    e2eServerToken : process.env.E2E_REST_SERVER_TOKEN,
     database : {
             "host":  process.env.MYSQL_HOST, 
             "username" : process.env.MYSQL_USER, 

@@ -24,7 +24,7 @@ var AuthController = require(__root + 'auth/AuthController');
 app.use('/api/auth', AuthController);
 
 // time API
-var timeAPI = require(__root + 'v01/time');
+var timeAPI = require(__root + 'v01/time').router;
 app.use('/api/v01/time', timeAPI);
 
 

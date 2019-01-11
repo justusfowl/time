@@ -96,6 +96,14 @@ if (!args.holidayDate){
   data.holidayDate = args.holidayDate.toString();
 }
 
+// default procedure for this script is "checkHoliday"
+if (!args.proc){
+
+  args["proc"] = "checkHoliday"
+
+}
+
+
 data.dateVacStart = data.holidayDate;
 data.dateVacEnd = data.holidayDate;
 

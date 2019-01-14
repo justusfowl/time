@@ -140,7 +140,7 @@ export class AuthenticationService {
     
   logoutTimer(){
     this.logout();
-    window.location.replace("http://intranet.praxis.local");
+    window.location.replace("https://intranet.praxis.local");
 
   }
     

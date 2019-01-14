@@ -8,12 +8,15 @@ import { environment as ENV } from '../../environments/environment';
 
 import { UtilService } from '../_services/util.service';
 
+import { ToastrService } from 'ngx-toastr';
+
 @Injectable()
 export class DataHandlingService { 
     constructor(
         private router: Router,
         private http: Http, 
-        private util: UtilService
+        private util: UtilService,
+        private toastr: ToastrService
     ) { }
     
     // dev URL
@@ -396,6 +399,18 @@ export class DataHandlingService {
             
     }
 
+    addSickness(body){
+        this.util.showLoader();
+
+        let headers = new Headers({'Content-Type': 'application/json'});          
+        headers.append('x-access-token',localStorage.getItem("currentUserToken"))
+        
+        let options = new RequestOptions({ headers: headers });
+        
+        return this.http.post(this.BaseURL + this.APIUrl + 'time/addSickness', JSON.stringify(body), options)
+            .pipe(map((res: Response) => this.util.hideLoader(res.json())));
+    }
+
     // Calender / Scheduler handling
 
     addPlantime(body) {
@@ -533,6 +548,7 @@ export class DataHandlingService {
             
         }else{
             console.log(err);
+            this.toastr.error('Fehler', err);
         }
 
         this.util.hideLoader(null);

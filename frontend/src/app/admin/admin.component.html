@@ -118,6 +118,7 @@
                                     <thead>
                                         <tr>
                                         <th scope="col">ID</th>
+                                        <th scope="col">Benutzer</th>
                                         <th scope="col">Start</th>
                                         <th scope="col">Ende</th>
                                         <th scope="col">Bearbeitungsstatus</th>
@@ -129,6 +130,7 @@
                                             <tr *ngIf="i<topEntries">
                                                 <th scope="row">{{row.requestid}}
                                                 </th>
+                                                <td>{{row.username}}</td>
                                                 <td>{{row.requesttimestart}}</td>
                                                 <td>{{row.requesttimeto}}</td>
                                                 <td>{{formatter.formatReqStatusId(row.requeststatus)}}
@@ -191,11 +193,7 @@
                                             <td>{{formatter.formatUserCategoryId(user.usercategoryid)}}</td>
                                             <td>{{formatter.formatUserRoleId(user.userroleid)}}</td>
                                             <td>{{user.timehrsperweek}}</td>
-                                            <td>{{user.vacationhrsperday}} Std / {{user.vacationcontractdays}} Tage
-                                                <p class="subfigure">
-                                                    vacid: {{user.vacationid}}
-                                                </p>
-                                            </td>
+                                            <td>{{user.vacationhrsperday}} Std / {{user.vacationcontractdays}} Tage</td>
                                         </tr>
                                     </ng-container>
                                 </tbody>
@@ -210,42 +208,52 @@
                         <select class="selectpicker dropdown-toggle btn btn-default btn-secondary selectMenu" [(ngModel)]="selectedUser">
                             <option *ngFor="let u of allUsers" [ngValue]="u.userid">{{u.username}}</option>
                         </select>
-                    </div>                    
+                        <div class="subfigure">
+                            Nutzer
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="selectpicker dropdown-toggle btn btn-default btn-secondary selectMenu" [(ngModel)]="selectedAuxTimeOption">
+                            <option value="4">Monatsausgleich</option>
+                            <option value="1">Krankheit</option>
+                        </select>
+                    </div>   
+                    
+                    <div class="col-md-2" *ngIf="selectedAuxTimeOption == 4">
+                        <input 
+                            class="inputTime" style="width: 100%" placeholder="2,5" id="timeTimeModi" [(ngModel)]="timeTimeModi" required>
+                            <div class="subfigure">
+                                Stunden
+                            </div>
+                    </div>
+                    
                 </div>
                 <div class="row">
-                    <div class="col-md-4 subfigure filter">
-                        Nutzer
-                    </div>
+                    
                 </div>
                 <div class="row paddingBottom">
-                    <div class="col-md-2">
-                        <input class="inputTime" style="width: 100%" placeholder="2,5" id="timeTimeModi" [(ngModel)]="timeTimeModi" required>
-                    </div>
+                    
                     <div class="col-md-3">
                         <form #myForm="ngForm" novalidate>
                             <my-date-picker name="timeTimeModiFrom" [options]="myDatePickerOptions" [(ngModel)]="timeTimeModiFrom" required></my-date-picker>
                         </form>
+                        <div class="subfigure">
+                            Von:
+                        </div>
                     </div>      
                     <div class="col-md-3">
                         <form #myForm="ngForm" novalidate>
                             <my-date-picker name="timeTimeModiTo" [options]="myDatePickerOptions" [(ngModel)]="timeTimeModiTo" required></my-date-picker>
                         </form>
+                        <div class="subfigure">
+                            Bis:
+                        </div>
                     </div>
                     <div class="col-md-2">
                         <button type="button" class="btn btn-primary btn-block" (click)="addTimeModi()">Eintragen</button>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-2 subfigure">
-                        Stunden
-                    </div>
-                    <div class="col-md-3 subfigure">
-                        Von:
-                    </div>
-                    <div class="col-md-3 subfigure">
-                        Bis:
-                    </div>
-                </div>
+               
             </div>
         </div>
 </div>

@@ -22,152 +22,6 @@ var j = schedule.scheduleJob('16 * * * * *', function(){
     logger.info('The answer to life, the universe, and everything!');
 });
 */
-
-router.post("/check", function(req, res, next ){
-    var db = new mysqlInstance(); 
-    var props = parseBasicProps(req);
-
-    var data = {};
-    data.db = db;
-    data.req = req;
-    data.res = res;
-    data.props= props;
-
-    data.dateVacStart = req.query.dateVacStart;
-    data.dateVacEnd = req.query.dateVacEnd;
-
-    data.holidayDate = req.query.holidayDate;
-
-    var outFunction = function (data){
-
-        (async () => {
-
-            for (var i=0; i<data.userInfo.length; i++){
-            
-                let sessionInfo =  await getUsersVacValueRESTCall(1, "20190101", "20190101").catch(err => {
-                    console.log("error");
-                    console.log(err);
-                });
-
-                console.log(sessionInfo);
-
-            }
-
-           
-            
-            
-        })();
-
-
-        // close connection to database;
-        db.con.end();
-
-        res.status(200).send(data);
-
-        return true;
-
-    };
-
-    data.outFunction = outFunction;
-   
-    try{
-        getUserInfoFunction(data).then(outFunction);
-    }
-    catch(err){
-        db.con.end();
-        res.status(500).send(err);
-        logger.info(err);
-    }
-});
-
-
-router.post("/holidayCheck", function (req, res, next){
-
-    var inputDate = "20190101";
-
-    var db = new mysqlInstance();
-
-    var data = {
-        db: db,
-        input: {
-            betweenStartDate: '2018-01-01',
-            betweenEndDate : '2018-01-01', 
-            all: true
-        }, 
-        vacationWorkingDays : [], 
-        dateVacStart : '20180101', 
-        dateVacEnd : '20180101'
-    }
-
-    var getWorkingdaysFunction = function(data) {
-        var promise = new Promise(function(resolve, reject){
-    
-            var cbWorkingdays = function (err, result) {
-                if (err) {
-                    logger.info(err);
-                }else{
-                    data.resultWorkingdays = result;
-                    resolve(data); 
-                }
-            };
-            db.getWorkingdays(data.input, cbWorkingdays);
-        });
-        return promise;
-    };
-
-    // check if the input date is a holiday or not
-
-    // get all users 
-
-    // loop through all users and get the value of working day
-
-    // insert as auxtime
-
-    var iterateFunction = function (data){
-
-        if (data.resultWorkingdays[0].holiday != null){
-            logger.info("HOLIDAAAAAAY")
-        }else{
-            logger.info("No Holiday")
-        }
-
-        var insertValueInAuxTimeFunction = function (data){
-            logger.info(data.input.userid)
-            logger.info(data.output.vacationValues);
-        };
-
-        data.outFunction = insertValueInAuxTimeFunction;
-
-        var iterateUser = function (row){
-
-            var copyData = _.cloneDeep(data);
-
-            copyData.input.userid = row.userid;
-            copyData.userInfo.length = 0; 
-            copyData.userInfo.push(row); 
-
-            decideUponUserCategory(copyData);
-        }
-
-        _(data.userInfo).forEach(iterateUser);
-
-    };
-
-    try{
-        getWorkingdaysFunction(data)
-            .then(getUserInfoFunction)
-
-            .then(iterateFunction)
-            .then(resp => {
-                req.json(resp);
-            })
-    }
-    catch(err){
-        logger.info(err);
-    }
-
-})
-
 // API Endpoints
 
 router.post('/addActualTime', VerifyToken, function(req, res, next) {
@@ -1451,6 +1305,91 @@ router.post('/addPlantime', VerifyToken, function(req, res, next) {
 
 });
 
+router.post('/addSickness', VerifyToken, function(req, res, next) {
+    
+    var db = new mysqlInstance(); 
+    var props = parseBasicProps(req);
+    var userid = parseInt(req.query.userid);
+
+    var data = {};
+    data.db = db;
+    data.req = req;
+    data.res = res;
+    data.props= props;
+
+    data.input = { 
+        userid : req.body.userid,
+        betweenStartDate : req.body.dateSicknessStart,
+        betweenEndDate : req.body.dateSicknessEnd
+    };
+
+    data.dateSicknessStart = req.body.dateSicknessStart;
+    data.dateSicknessEnd = req.body.dateSicknessEnd;
+
+    var getWorkingdaysFunction = function(data) {
+        var promise = new Promise(function(resolve, reject){
+    
+            var cbWorkingdays = function (err, result) {
+                if (err) {
+                    logger.info(err);
+                }else{
+                    data.resultWorkingdays = result;
+                    data.vacationWorkingDays = result;
+                    resolve(data); 
+                }
+            };
+            db.getWorkingdays(data.input, cbWorkingdays, true, true);
+        });
+        return promise;
+    };
+
+
+    var outFunction = function (data){
+
+        var inputArray = [];
+
+        if (data.output.vacationOverview.length > 0){
+
+            data.output.vacationOverview.forEach(element => {
+                var timeSicknessStart = new Date(element.refdate.substring(0,4) + "-" + element.refdate.substring(4,6) + "-" + element.refdate.substring(6,8) + " 09:00:00")
+                var timeSicknessEnd = new Date (timeSicknessStart.getTime() + element.avgHrsWorked * 60 * 60 * 1000 )
+
+                // Example: [parseInt(userId),auxtimeFrom,auxtimeTo,catTimeId,parseInt(requestId)]
+                inputArray.push([parseInt(data.input.userid),timeSicknessStart,timeSicknessEnd,1,null])
+            });
+            
+            var cb = function (err, result) {
+                if (err) {
+                    res.status(500).send(err);
+                    logger.info(err);
+                }else{
+                    res.status(200).send({status: "valid: added entries: " + result.affectedRows + " as per sickness request "});
+                }
+                db.con.end();
+                };
+
+            db.addAuxTime(inputArray, cb);
+
+        }else{
+            db.con.end();
+            res.status(500).send("Please check the dates");
+        }
+
+    };
+
+    data.outFunction = outFunction;
+   
+    try{
+        getUserInfoFunction(data).then(getWorkingdaysFunction).then(decideUponUserCategory);
+    }
+    catch(err){
+        db.con.end();
+        res.status(500).send(err);
+        logger.info(err);
+    }
+      
+});
+
 router.post('/addTimeModi', VerifyToken, function(req, res, next) {
     
     logger.info("addTimeModi triggered");
@@ -1459,12 +1398,14 @@ router.post('/addTimeModi', VerifyToken, function(req, res, next) {
     
     var data = {};
     data.req = req;
+
     data.input = {
         userid : req.body.userid,
         betweenStartDate : req.body.dateModiStart,
         betweenEndDate : req.body.dateModiEnd, 
         amtHrsModi : parseFloat(req.body.amtHrsModi)
     };
+
     data.res = res;
 
     console.log(data.input);

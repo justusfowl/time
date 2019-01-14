@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthenticationService,  DataHandlingService, FormatterService, UtilService } from '../_services/index';
 import {IMyDpOptions,IMyDateModel} from 'mydatepicker';
 import { environment as ENV } from '../../environments/environment';
-
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-root',
@@ -27,7 +27,8 @@ export class AdminComponent implements OnInit{
         private authService: AuthenticationService,
         private dataHandlingService : DataHandlingService, 
         private formatter : FormatterService, 
-        private util: UtilService
+        private util: UtilService,
+        private toastr: ToastrService
         ){
 
             this.appVersion = ENV.appVersion;
@@ -49,10 +50,12 @@ export class AdminComponent implements OnInit{
 
     //time modifications
 
-    selectedUser : Number;
+    selectedUser : number;
     timeTimeModi: Number;
     timeTimeModiFrom: any; 
     timeTimeModiTo: any;
+
+    selectedAuxTimeOption : number = 4;
 
     ngOnInit(){
 
@@ -72,7 +75,12 @@ export class AdminComponent implements OnInit{
 
         this.dataHandlingService.getUserInfo(params).subscribe(
             data => {
-            this.allUsers = data;
+                this.allUsers = data;
+               
+                if (data.length > 0){
+                    this.selectedUser = data[0].userId;
+                }
+               
             },
             error => {
                 this.dataHandlingService.errorHandler(error);
@@ -117,6 +125,7 @@ export class AdminComponent implements OnInit{
         var body = {"requestId" : row.requestid};
         this.dataHandlingService.approveRequest(body).subscribe(
             data => {
+                this.toastr.success('Zeitmodifikation', 'Anfrage bestätigt');
                 this.getTimeRequests();
             },
             error => {
@@ -130,6 +139,7 @@ export class AdminComponent implements OnInit{
             var body = {"requestId" : row.requestid};
             this.dataHandlingService.rejectRequest(body).subscribe(
                 data => {
+                    this.toastr.warning('Zeitmodifikation', 'Anfrage abgelehnt');
                     this.getTimeRequests();
                 },
                 error => {
@@ -143,6 +153,7 @@ export class AdminComponent implements OnInit{
             var body = {"requestId" : row.requestid};
             this.dataHandlingService.rejectVacRequest(body).subscribe(
                 data => {
+                    this.toastr.warning('Zeitmodifikation', 'Anfrage abgelehnt');
                     this.getVacRequests();
                 },
                 error => {
@@ -155,6 +166,7 @@ export class AdminComponent implements OnInit{
         var body = {"requestId" : row.requestid};
         this.dataHandlingService.approveVacRequest(body).subscribe(
             data => {
+                this.toastr.success('Zeitmodifikation', 'Anfrage bestätigt');
                 this.getVacRequests();
             },
             error => {
@@ -165,23 +177,51 @@ export class AdminComponent implements OnInit{
     addTimeModi(){
 
         try{
-            var body = {
-                userid: this.ensureValue(this.selectedUser),
-                dateModiStart : this.ensureValue(this.timeTimeModiFrom.formatted),
-                dateModiEnd : this.ensureValue(this.timeTimeModiTo.formatted),
-                amtHrsModi : this.ensureValue(this.timeTimeModi)
-            };
 
-            this.dataHandlingService.addTimeModi(body).subscribe(
-                data => {
-                    this.selectedUser = null;
-                    this.timeTimeModi = null;
-                    this.timeTimeModiFrom = null;
-                    this.timeTimeModiTo = null
-                },
-                error => {
-                    this.dataHandlingService.errorHandler(error);
-                });
+            var body; 
+
+            if (this.selectedAuxTimeOption == 4){
+                body = {
+                    userid: this.ensureValue(this.selectedUser),
+                    dateModiStart : this.ensureValue(this.timeTimeModiFrom.formatted),
+                    dateModiEnd : this.ensureValue(this.timeTimeModiTo.formatted),
+                    amtHrsModi : this.ensureValue(this.timeTimeModi)
+                };
+    
+                this.dataHandlingService.addTimeModi(body).subscribe(
+                    data => {
+                        this.selectedUser = null;
+                        this.timeTimeModi = null;
+                        this.timeTimeModiFrom = null;
+                        this.timeTimeModiTo = null;
+
+                        this.toastr.success('Zeitmodifikation', 'Monatsausgleich erfolgreich');
+                    },
+                    error => {
+                        this.dataHandlingService.errorHandler(error);
+                    });
+            }else if (this.selectedAuxTimeOption == 1){
+
+                body = {
+                    userid: this.ensureValue(this.selectedUser),
+                    dateSicknessStart : this.ensureValue(this.timeTimeModiFrom.formatted),
+                    dateSicknessEnd : this.ensureValue(this.timeTimeModiTo.formatted)
+                };
+    
+                this.dataHandlingService.addSickness(body).subscribe(
+                    data => {
+                        this.selectedUser = null;
+                        this.timeTimeModi = null;
+                        this.timeTimeModiFrom = null;
+                        this.timeTimeModiTo = null;
+
+                        this.toastr.success('Zeitmodifikation', 'Krankheitseintrag erfolgreich');
+                    },
+                    error => {
+                        this.dataHandlingService.errorHandler(error);
+                    });
+            }
+           
                 
         }catch(err){
             alert(err)
@@ -189,8 +229,10 @@ export class AdminComponent implements OnInit{
     }
 
     ensureValue(val){
-        if (val == null){
+        if (val == null || typeof(val) == "undefined"){
             throw Error ("value null");
+        }else{
+            return val; 
         }
     }
 

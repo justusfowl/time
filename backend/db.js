@@ -178,7 +178,7 @@ mysqlInstance.prototype.getWorkingdays = function (input, cb, flagBeforeToday = 
     if (flagBeforeToday){
         filterStr = " and replace(lookupdates.date,'-','') < concat(year(now()),month(now())) ";
     }
-    else if (typeof(input.betweenStartDate) != "undefined"){
+    if (typeof(input.betweenStartDate) != "undefined"){
         var startDate = input.betweenStartDate.replace(/-/g,"");
         var endDate = input.betweenEndDate.replace(/-/g,""); 
 
@@ -472,18 +472,19 @@ mysqlInstance.prototype.getVacRequests = function (input, cb) {
         
         if (input.userid){
             var userid = parseInt(input.userid);
-            whereStr = "WHERE userid = " + userid + " "; 
+            whereStr = "WHERE v.userid = " + userid + " "; 
         }else if (input.requestId){
             var requestId = parseInt(input.requestId);
-            whereStr = "WHERE requestid = " + requestId  + " "; 
+            whereStr = "WHERE v.requestid = " + requestId  + " "; 
         }
 
         if (input.all){
             whereStr = ""; 
         }
     
-        var sql = "SELECT *, replace(left(requesttimestart,10),'-','') as refdate\
-        FROM time.tblrequestqueuevac " + whereStr + " ;";
+        var sql = "SELECT v.*, u.username, replace(left(requesttimestart,10),'-','') as refdate\
+        FROM time.tblrequestqueuevac as v \
+        left join tblusers as u on v.userid = u.userid " + whereStr + " ;";
 
         this.con.query(sql, cb);
 }

@@ -24,6 +24,8 @@ import { AuthenticationService, DataHandlingService, FormatterService, UtilServi
 
 import { AuthGuard } from './_guards/index';
 
+import { ToastrModule } from 'ngx-toastr';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 //import {enableProdMode} from '@angular/core';
 
 
@@ -51,7 +53,9 @@ const appRoutes: Routes = [
     ReactiveFormsModule,
     MyDatePickerModule, 
     FullCalendarModule,
-    MultiselectDropdownModule
+    MultiselectDropdownModule,
+    BrowserAnimationsModule,
+    ToastrModule.forRoot()
   ],
   declarations: [
     AppComponent,

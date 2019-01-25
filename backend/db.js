@@ -119,8 +119,13 @@ mysqlInstance.prototype.getRawBookings = function (req, cb) {
     
         var db = this; 
         var userid = parseInt(req.query.userid);
-    
-        var sql = "SELECT *, replace(left(actualtime,10),'-','') as refdate  FROM time.tblactualtime where userid = "+ userid + " ;";
+
+        var sql = 
+        "SELECT actTime.*, replace(left(actTime.actualtime,10),'-','') as refdate, \
+        CASE when delReq.delactualtimeid is NULL THEN 0 ELSE 1 END as deleteRequestExists   \
+        FROM time.tblactualtime as actTime \
+        left join time.tblrequestqueueaddtime as delReq on actTime.actualtimeid = delReq.delactualtimeid \
+        where actTime.userid = "+ userid + ";";
         
         this.con.query(sql, cb );
 }
@@ -459,7 +464,8 @@ mysqlInstance.prototype.getTimeRequests = function (input, cb) {
             replace(addtimedate,'-','') as refdate\
             FROM time.tblrequestqueueaddtime as requests\
             inner join (select username, userid from time.tblusers) as users on users.userid = requests.userid\
-            " + whereStr + " \ ;";
+            " + whereStr + " \
+            order by requeststatuschange desc;";
         
         this.con.query(sql, cb );
 }

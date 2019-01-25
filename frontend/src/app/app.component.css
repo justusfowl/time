@@ -108,6 +108,11 @@ html, body {
 
 
 /* ACCOUNT */
+
+.actualTimeDelete-btn.isDisabled{
+  opacity: 0.5;
+}
+
 .accSubtitle{
   font-size: 14px; 
   color: rgb(139, 139, 139);

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { AuthenticationService } from 'app/_services/index';
+import { AuthenticationService } from '../_services/index';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -12,15 +12,15 @@ export class AuthGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
         
-        if (localStorage.getItem('currentUserToken')) {
+        if (this.authorizationService.isLoggedOnAndTokenValid()) {
             // logged in so return true
-
-            this.authorizationService.initiateActivityTime();
             return true;
+        }else{
+            // not logged in so redirect to login page with the return url
+            this.router.navigate(['/login']);
+            return false;
         }
         
-        // not logged in so redirect to login page with the return url
-        this.router.navigate(['/login']);
-        return false;
+
     }
 }

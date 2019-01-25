@@ -186,7 +186,7 @@
                                         </td>
                                         <td>{{row.requestid}}</td>
                                         <td>
-                                                <button type="button" (click)="deleteRequest(row, $event);" *ngIf="hideDeleteReqBtn(row)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                                <button type="button" class="actualTimeDelete-btn" (click)="deleteRequest(row, $event);" [class.isDisabled]="isDisabled(row)" [disabled]="isDisabled(row)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                                         </td>
                                     </tr>
                                 </ng-container>

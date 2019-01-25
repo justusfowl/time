@@ -1960,6 +1960,8 @@ function parseBasicProps(req){
 
 function basicAPI(inputArr, props){
 
+    outArr = inputArr;
+
     // sorting of output element
     if (typeof(props.sortBy) != "undefined"){
         var columns = props.sortBy.columns;

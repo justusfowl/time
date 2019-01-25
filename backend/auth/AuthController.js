@@ -169,6 +169,7 @@ router.post('/login', function(req, res) {
         // return the information including token as JSON
         if (data.auth){
           data.token = token; 
+          data.expiresIn = config.tokenValidSeconds;
           res.status(200).send(data);
         }else{
           // res.redirect('/login');

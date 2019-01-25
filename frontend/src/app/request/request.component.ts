@@ -130,6 +130,8 @@ export class RequestComponent implements OnInit{
     this.dataHandlingService.addRequest(body).subscribe(
       data => {
 
+        this.dataHandlingService.infoHandler("Antrag erstellt", "Anträge");
+
         this.dateHomeVisit = null;
         this.timeHomeVisitTo = null;
         this.timeHomeVisitFrom = null;
@@ -154,7 +156,11 @@ export class RequestComponent implements OnInit{
 
     this.dataHandlingService.addVacRequest(body).subscribe(
         data => {
-        this.getVacRequests();
+
+          this.dataHandlingService.infoHandler("Urlaubsanfrage erstellt", "Urlaubsanträge");
+          this.dateVacStart = ""; 
+          this.dateVacEnd = ""; 
+          this.getVacRequests();
 
         },
         error => {

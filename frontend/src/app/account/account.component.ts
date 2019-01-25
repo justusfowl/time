@@ -45,6 +45,8 @@ export class AccountComponent implements OnInit{
   hrsWorkedThisMonth : any; 
   timehrsPerMonthThisMonth : any; 
 
+  deleteRequestIds = [];
+
   ngOnInit(){
 
     this.util.setNavOnRoute("account");
@@ -165,11 +167,12 @@ export class AccountComponent implements OnInit{
 
   deleteRequest(row, element){
 
-    $(element.target).prop("disabled",true);
+    $(element.target.parentElement).prop("disabled",true);
     
     var actualtimeid = row.actualtimeid; 
 
     var userId = this.authService.getUserId(); 
+
     var body = {
             "userid" : userId, 
             "actualtimeid": actualtimeid, 
@@ -180,12 +183,14 @@ export class AccountComponent implements OnInit{
 
     this.dataHandlingService.addRequest(body).subscribe(
       data => {
+        this.deleteRequestIds.push(row.actualtimeid);
+
         this.getRawBookings();
-        alert("Ihre Löschanfrage wurde entgegengenommen.")
+        this.dataHandlingService.infoHandler("Ihre Löschanfrage wurde entgegengenommen.", "Anträge");
       },
       error => {
         this.dataHandlingService.errorHandler(error);
-        alert("Ihre Löschanfrage wurde bereits entgegengenommen, bitte überprüfen Sie Ihre Übersicht der Anfragen.")
+        this.dataHandlingService.errorHandler("Ihre Löschanfrage wurde entgegengenommen.");
       });
   }
 
@@ -227,12 +232,8 @@ export class AccountComponent implements OnInit{
     return new Date().getFullYear();
   }
 
-  hideDeleteReqBtn(row){
-    if (row.requestid == null){
-      return true; 
-    }else{
-      return false; 
-    }
+  isDisabled(row){
+    return this.deleteRequestIds.indexOf(row.actualtimeid) != -1 || row.requestid != null || row.deleteRequestExists == 1;
   }
 
   onDateChanged(event, src) {

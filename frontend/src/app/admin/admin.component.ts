@@ -92,7 +92,7 @@ export class AdminComponent implements OnInit{
         var filterArr = [this.dataHandlingService.filterItem("requeststatus", "eq", this.filterStatus)];
 
         var userId = this.authService.getUserId(); 
-        let params = {"userid": userId, "sortBy": "refdate", "sortDir" : "DESC", filters: filterArr, "all": true};
+        let params = {"userid": userId, filters: filterArr, "all": true};
     
         this.dataHandlingService.getTimeRequests(params).subscribe(
           data => {

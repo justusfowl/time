@@ -554,5 +554,15 @@ export class DataHandlingService {
         this.util.hideLoader(null);
     }
 
+    infoHandler(msg, title){
+
+        try{
+            this.toastr.info(msg, title)
+        }catch(err){
+            console.log(err); 
+            alert(msg);
+        }
+    }
+
     
 }

@@ -4,19 +4,40 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DataHandlingService } from '../_services/datahandling.service';
 import { environment as ENV } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthenticationService {
     constructor(
         private http: Http,
+        private router: Router,
         private dataHandlingService : DataHandlingService,
     ) { 
 
-        this.expiryPeriod = ENV.jwtExpirySeconds / 60; // expiryPeriod loaded in seconds and converted into minutes
+        if (localStorage.getItem('currentUserToken')) {
+            // logged in so return true
+
+            var expiresAt = parseInt(localStorage.getItem('expiresAt'));
+            var now = new Date().getDate();
+
+            var expiresInSec = (expiresAt-now)/1000;
+
+            if (expiresInSec < 0){
+                this.router.navigate(['/login']);
+            }else{
+                this.expiryPeriod = expiresInSec / 60; // expiryPeriod loaded in seconds and converted into minutes
+                this.logoffDate = new Date(expiresAt);
+                this.initiateActivityTime();
+            }
+            
+        }else{
+            this.expiryPeriod  = 0;
+        }
+       
     }
 
     public username : any; 
-    public expiryPeriod : number; 
+    public expiryPeriod : number;  // periode in minutes
     public activityInterval : any;
     public activityRemainingTime: any;
     public logonDate : any;
@@ -69,6 +90,18 @@ export class AuthenticationService {
                     localStorage.setItem('currentUserIsTimePlanner', user.timeplannerGroup);
                     localStorage.setItem('currentUserId', user.userid);
 
+                    localStorage.setItem('expiresIn', user.expiresIn);
+
+                    var now = new Date();
+                    var expiresAt = new Date(now.getTime() + (user.expiresIn-5)*1000); // allow for 5 extra seconds as grace period during network transmission
+                    var expiresAtString = expiresAt.getTime().toString();
+
+                    this.logoffDate = new Date(expiresAt);
+
+                    localStorage.setItem('expiresAt', expiresAtString);
+
+                    this.expiryPeriod = user.expiresIn / 60; // expiryPeriod must be seconds
+
                     $('#labelUsername').html(user.username);
 
                     this.initiateActivityTime();
@@ -83,26 +116,41 @@ export class AuthenticationService {
 
     logout() {
         // remove user from local storage to log user out
-        localStorage.removeItem('currentUserToken');
-        localStorage.removeItem('currentUserName');
-        localStorage.removeItem('currentUserId');
-        localStorage.removeItem('currentUserIsAdmin');
+        localStorage.clear();
 
         $('#labelUsername').html("");
 
         clearInterval(this.activityInterval);
 
         console.log("logout");
+
+        this.router.navigate(['/login']);
+    }
+
+    isLoggedOnAndTokenValid(){
+
+        if (localStorage.getItem('currentUserToken')) {
+            // logged in so return true
+
+            var expiresAt = parseInt(localStorage.getItem('expiresAt'));
+            var now = new Date().getTime(); 
+    
+            var expiresInSec = (expiresAt-now)/1000;
+
+            if (expiresInSec < 0){
+                return false;
+            }else{
+                return true;
+            }
+
+
+        }else{
+            return false;
+        }
+
     }
 
     initiateActivityTime(){
-
-        var logoffDate = new Date(); 
-
-        //define the period after which auto-logout happens in minutes 
-        logoffDate.setMinutes(logoffDate.getMinutes() + this.expiryPeriod );
-    
-        this.logoffDate = logoffDate;
         
         if (this.activityInterval){
             clearInterval(this.activityInterval);
@@ -127,11 +175,10 @@ export class AuthenticationService {
         this.activityRemainingTime = displayTimeDiff;  
     
         if (timeDiff < 0 ){
-            if (confirm('Clicken Sie OK, wenn Sie weiterarbeiten wollen?')) {
-                this.initiateActivityTime();
+            if (confirm('Clicken Sie OK, wenn Sie sich erneut einloggen und weiterarbeiten wollen?')) {
+               this.logout();
             } else {
                 this.logoutTimer();
-                
             }
             
         }

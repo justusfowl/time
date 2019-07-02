@@ -1810,7 +1810,7 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
                     orientation: "landscape"
                 },
                 engine: 'jsrender',
-                recipe: 'chrome-pdf'
+                recipe: 'phantom-pdf'
                 },
                 data: {
                     "balance": reportData,

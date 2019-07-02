@@ -278,7 +278,7 @@ mysqlInstance.prototype.getNumberWorkingdays = function (input, cb) {
     month,\
     year;\
     "
-    
+
     this.con.query(sql, cb );
 
 }
@@ -752,6 +752,69 @@ mysqlInstance.prototype.deletePlantime = function (req, cb) {
     var sql = "DELETE FROM `time`.`tblplantime` where plantimeid = " + planTimeId + ";"
 
     this.con.query(sql, cb );
+
+};
+
+
+/* Admin tasks */
+
+mysqlInstance.prototype.addUser = function (userObj, cb) {
+
+    var sql = "INSERT INTO `time`.`tblusers`\
+    (`username`,\
+    `userpassword`,\
+    `usercategoryid`,\
+    `userroleid`)\
+    VALUES (?, ?, ?, ?);";
+    
+    this.con.query(sql, [userObj.username, userObj.userpassword,userObj.usercategoryid,
+        userObj.userroleid ], cb);
+
+};
+
+mysqlInstance.prototype.addUserLookupTimes = function (lookupObj, cb) {
+
+    var sql = "INSERT INTO `time`.`tbllookupusertimes`\
+    (`userid`,\
+    `validfrom`,\
+    `validto`,\
+    `timehrsperweek`,\
+    `timehrspermonth`,\
+    `timehrsperyear`,\
+    `usertimecomment`)\
+    VALUES (?, ?, ?, ?,?,?,?);";
+    
+    this.con.query(sql, [
+        lookupObj.userid,
+        lookupObj.validfrom, 
+        lookupObj.validto, 
+        lookupObj.timehrsperweek, 
+        lookupObj.timehrspermonth, 
+        lookupObj.timehrsperyear, 
+        lookupObj.usertimecomment
+    ], cb);
+
+};
+
+mysqlInstance.prototype.addUserVacationTimes = function (vacationObj, cb) {
+
+    var sql = "INSERT INTO `time`.`tblvacation`\
+    (`userid`,\
+    `validfrom`,\
+    `validto`,\
+    `vacationhrsperday`,\
+    `vacationcontractdays`,\
+    `vacationhrsvalueperday`)\
+    VALUES (?, ?, ?, ?,?,?);";
+    
+    this.con.query(sql, [
+        vacationObj.userid,
+        vacationObj.validfrom, 
+        vacationObj.validto, 
+        vacationObj.vacationhrsperday, 
+        vacationObj.vacationcontractdays, 
+        vacationObj.vacationhrsvalueperday
+    ], cb);
 
 };
 

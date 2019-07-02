@@ -75,7 +75,7 @@
                     </div>
                     
                 </div>    
-                <table class="table table-hover">
+                <table class="table table-hover single_bookings_table">
                     <thead>
                         <tr>
                         <th scope="col">Tag</th>
@@ -88,7 +88,7 @@
                     </thead>
                     <tbody>
                         <ng-container *ngFor="let row of filteredDayBookings; let i=index">
-                            <tr>
+                            <tr [class.alert]="getSingleBookingRowClass(row)">
                                 <th scope="row">{{formatter.formatRefDate(row.refdate)}}
                                     <p class="subfigure">
                                             {{row.day}}

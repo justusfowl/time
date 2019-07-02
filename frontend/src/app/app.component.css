@@ -164,6 +164,12 @@ html, body {
   font-size: 14px; 
 }
 
+/* STATS */ 
+
+.single_bookings_table tr.alert{
+    background-color: #ffecec; 
+}
+
 /* LOGIN */
 
 .loginContainer{

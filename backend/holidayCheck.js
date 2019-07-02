@@ -4,7 +4,7 @@ const path = require('path');
 var jsreport = require('jsreport');
 var fs = require('fs');
 
-var http = require('http');
+var https = require('https');
 const args = require('yargs').argv;
 
 var logger = require('./holidayCheckLog.js'); 
@@ -44,7 +44,7 @@ async function getUsersVacValueRESTCall(userId, refdateStart, refdateEnd) {
             headers: headers
             };
         
-            var req = http.request(options, function(res) {  
+            var req = https.request(options, function(res) {  
 
                 res.on('data', function(data) {
                     try{

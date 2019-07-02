@@ -79,7 +79,7 @@ export class StatComponent implements OnInit{
     }
 
     onUserRowClick(user, mode){
-        this.getReport(user, mode);
+        this.getReport(user, mode, true);
     }
 
     onDateChanged(event: IMyDateModel) {
@@ -114,7 +114,7 @@ export class StatComponent implements OnInit{
         this.topEntries = this.topEntries + 5;
     }
 
-    getReport(user, mode){
+    getReport(user, mode, flagIsPDF=false){
     
         let params = {
             "userid": user.userid,
@@ -126,15 +126,21 @@ export class StatComponent implements OnInit{
             ]
         };
 
+        if (flagIsPDF){
+            params["flagIsPDF"] = true
+        }
+
         this.dataHandlingService.getReport(params).subscribe(
             (res) => {
-
-                if (mode == 1){
-                    FileSaver.saveAs(res, user.username + "_" + this.dateRefMonthReport + "_timereport.pdf"); 
-                }else if (mode == 2){
-                    var fileURL = URL.createObjectURL(res);
-                    window.open(fileURL); 
+                if (flagIsPDF){
+                    if (mode == 1){
+                        FileSaver.saveAs(res, user.username + "_" + this.dateRefMonthReport + "_timereport.pdf"); 
+                    }else if (mode == 2){
+                        var fileURL = URL.createObjectURL(res);
+                        window.open(fileURL); 
+                    }
                 }
+                
             },
             error => {
               this.dataHandlingService.errorHandler(error);
@@ -170,6 +176,22 @@ export class StatComponent implements OnInit{
           error => {
             this.dataHandlingService.errorHandler(error);
           });
+      }
+
+      getSingleBookingRowClass(row){
+
+        if (
+            isNaN(this.formatter.formatNumberDecimals(row.hrsWorked,2)) &&
+            isNaN(this.formatter.formatNumberDecimals(row.sickness,2)) &&
+            isNaN(this.formatter.formatNumberDecimals(row.vacation,2)) &&
+            isNaN(this.formatter.formatNumberDecimals(row.holidaytime,2)) &&
+            isNaN(this.formatter.formatNumberDecimals(row.auxAddTime,2))   
+        ){
+            return true; 
+        }else{
+            return false; 
+        }
+
       }
 
       filterDayBookings(){

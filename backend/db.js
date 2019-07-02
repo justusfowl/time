@@ -279,6 +279,8 @@ mysqlInstance.prototype.getNumberWorkingdays = function (input, cb) {
     year;\
     "
 
+    console.log(sql);
+
     this.con.query(sql, cb );
 
 }

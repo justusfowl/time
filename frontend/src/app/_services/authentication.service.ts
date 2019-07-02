@@ -106,10 +106,6 @@ export class AuthenticationService {
 
                     this.initiateActivityTime();
 
-                    // FOR DEV PURPOSES SET USER ID 
-
-                    //var devUserId = "6";
-                    //localStorage.setItem('currentUserId', devUserId);
                 }
             }));
     }

@@ -485,11 +485,11 @@ export class DataHandlingService {
         this.util.showLoader();
 
         if (typeof(params) == "undefined"){
-            throw new Error("No params are defined for the API call on gettimepairs");
+            throw new Error("No params are defined for the API call on getReport");
         }
 
         if (!params.userid){
-            throw new Error("No userid is defined for the API call on gettimepairs");
+            throw new Error("No userid is defined for the API call on getReport");
         }
         
         let headers = new Headers({'Content-Type': 'application/json'});          

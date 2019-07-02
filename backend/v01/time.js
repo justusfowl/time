@@ -473,19 +473,19 @@ var mergeAccBalance = function (data){
 
         var calcBalance = function (row){
             // calculate difference between come and go times in minutes
-            if (typeof(row.hrsWorked) == "undefined"){
+            if (typeof(row.hrsWorked) == "undefined" || isNaN(row.hrsWorked)){
                 var hrsWorked = 0;
                 }else{
                 var hrsWorked = parseFloat(row.hrsWorked); 
                 }
             
-                if (typeof(row.timehrspermonth) == "undefined"){
+                if (typeof(row.timehrspermonth) == "undefined"  || isNaN(row.timehrspermonth)){
                 var timehrspermonth = 0;
                 }else{
                 var timehrspermonth = parseFloat(row.timehrspermonth); 
                 }
             
-                if (typeof(row.auxHrs) == "undefined"){
+                if (typeof(row.auxHrs) == "undefined"  || isNaN(row.auxHrs)){
                 var auxHours = 0;
                 }else{
                 var auxHours = parseFloat(row.auxHrs); 
@@ -1680,6 +1680,8 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
     var db = new mysqlInstance(); 
     var props = parseBasicProps(req);
 
+    var flagIsPDF = req.query.flagIsPDF; 
+
     // create config parameters for the chaining of promises
     var data = {};
     data.db = db;
@@ -1691,14 +1693,17 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
         "userid": req.query.userid 
     };
 
-    res.setHeader('Content-type', 'application/pdf');
+    if (flagIsPDF){
+        res.setHeader('Content-type', 'application/pdf');
+    }
+    
 
     var outFunction = function (data){
     
         var reportData = basicAPI(data.result, props);
 
         function formatNumberDecimals(num, digits){
-            if (num != null){
+            if (num != null && !isNaN(num)){
                 return num.toFixed(digits);
             }else{
                 return "-"; 
@@ -1727,57 +1732,58 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
                 }
             }
         });
-*/
-        jsreport.render({
-            template: {
-                content: '<head>\
-                <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">\
-                <style>\
-                    .table-borderless tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {\
-                        border: none;\
-                    }\
-                    .balanceTable{\
-                        font-size: 9pt; \
-                    }\
-                    th, td, tr {\
-                        padding: 1px;\
-                    }\
-                    .top{\
-                        border-top-style: solid;\
-                        border-top-color: black; border-width: 1px;}\
-                </style>\
-            </head>\
-            <div >\
-                <div style="font-size: 14pt; text-align: right;" >\
-                    ' + formatNumberDecimals(totalBalance,2) + '\
+*/  
+        if (flagIsPDF){
+            jsreport.render({
+                template: {
+                    content: '<head>\
+                    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">\
+                    <style>\
+                        .table-borderless tbody tr td, .table-borderless tbody tr th, .table-borderless thead tr th {\
+                            border: none;\
+                        }\
+                        .balanceTable{\
+                            font-size: 9pt; \
+                        }\
+                        th, td, tr {\
+                            padding: 1px;\
+                        }\
+                        .top{\
+                            border-top-style: solid;\
+                            border-top-color: black; border-width: 1px;}\
+                    </style>\
+                </head>\
+                <div >\
+                    <div style="font-size: 14pt; text-align: right;" >\
+                        ' + formatNumberDecimals(totalBalance,2) + '\
+                    </div>\
+                    <div style="font-size: 8pt; text-align: right; color: grey;" >\
+                        Balance per ' + reportData[0].refmonth + '\
+                    </div>\
                 </div>\
-                <div style="font-size: 8pt; text-align: right; color: grey;" >\
-                    Balance per ' + reportData[0].refmonth + '\
-                </div>\
-            </div>\
-            <table class="table table-hover balanceTable" style="width: 100%">\
-                <thead>\
-                    <tr><th scope="col">Monat</th><th scope="col">Arbeitszeit</th><th scope="col">Zusatzzeit</th><th scope="col">Sollzeit</th><th scope="col">Kontostand</th>\
-                    </tr>\
-                </thead>\
-                <tbody>\
-                    {{for balance}}\
-                        <tr>\
-                            <td scope="row">{{:refmonth}}</td>\
-                            <td>{{:hrsWorked}}</td>\
-                            <td>{{:auxHrs}}</td>\
-                            <td>{{:timehrspermonth}}</td>\
-                            <td>{{:balance}}</td>\
+                <table class="table table-hover balanceTable" style="width: 100%">\
+                    <thead>\
+                        <tr><th scope="col">Monat</th><th scope="col">Arbeitszeit</th><th scope="col">Zusatzzeit</th><th scope="col">Sollzeit</th><th scope="col">Kontostand</th>\
                         </tr>\
-                    {{/for}}\
-                </tbody>\
-            </table>\
-            <!-- <table class="table table-hover balanceTable" style="width: 100%; padding-top: 20px">\
-                <thead>\
-                    <tr><th scope="col">Monat</th><th scope="col">Arbeitszeit</th><th scope="col">Krankheit</th><th scope="col">Urlaub</th><th scope="col">Feiertag</th><th scope="col">Zeitausgleich</th>\
-                    </tr>\
-                </thead>\
-                <tbody>\
+                    </thead>\
+                    <tbody>\
+                        {{for balance}}\
+                            <tr>\
+                                <td scope="row">{{:refmonth}}</td>\
+                                <td>{{:hrsWorked}}</td>\
+                                <td>{{:auxHrs}}</td>\
+                                <td>{{:timehrspermonth}}</td>\
+                                <td>{{:balance}}</td>\
+                            </tr>\
+                        {{/for}}\
+                    </tbody>\
+                </table>\
+                <!-- <table class="table table-hover balanceTable" style="width: 100%; padding-top: 20px">\
+                    <thead>\
+                        <tr><th scope="col">Monat</th><th scope="col">Arbeitszeit</th><th scope="col">Krankheit</th><th scope="col">Urlaub</th><th scope="col">Feiertag</th><th scope="col">Zeitausgleich</th>\
+                        </tr>\
+                    </thead>\
+                    <tbody>\
                     {{for singleBookings}}\
                         <tr>\
                             <td scope="row">{{:refdate}}</td>\
@@ -1789,38 +1795,48 @@ router.get('/getReport', VerifyToken, function(req, res, next) {
                         </tr>\
                     {{/for}}\
                 </tbody>\
-            </table>\
-            -->\
-            <div style="overflow: hidden;">\
-            <div class="top" style="width: 200px; margin-top: 30px; margin-right: 30px; float:left; "></div><div class="top" style="width: 200px; margin-top: 30px; margin--right: 30px;float:left;"></div>\
-            </div>\
-            <div style="overflow: hidden;">\
-            <div style="width: 200px; font-size: 8pt; margin-right: 30px; float:left; ">Datum/Praxisvertreter</div><div  style="width: 200px; font-size: 8pt;  margin--right: 30px;float:left;">Datum/'+ data.userInfo[0].username+'</div>\
-            </div>\
-            <div style="font-size: 6pt; padding-top: 30px;"> Parameters: ' + JSON.stringify(props.filters) + ', created: ' + (new Date()).toISOString() + '</div>',
-            phantom: {
-                header: "Facharztpraxis für Allgemeinmedizin | Time Report " + data.userInfo[0].username,
-                footer: "<p style='text-align: center;'>{#pageNum}/{#numPages}</p>",
-                orientation: "landscape"
-            },
-            engine: 'jsrender',
-            recipe: 'phantom-pdf'
-            },
-            data: {
-                "balance": reportData, 
-                "singleBookings": singleBookingsInRefMonth
+                </table>\
+                -->\
+                <div style="overflow: hidden;">\
+                <div class="top" style="width: 200px; margin-top: 30px; margin-right: 30px; float:left; "></div><div class="top" style="width: 200px; margin-top: 30px; margin--right: 30px;float:left;"></div>\
+                </div>\
+                <div style="overflow: hidden;">\
+                <div style="width: 200px; font-size: 8pt; margin-right: 30px; float:left; ">Datum/Praxisvertreter</div><div  style="width: 200px; font-size: 8pt;  margin--right: 30px;float:left;">Datum/'+ data.userInfo[0].username+'</div>\
+                </div>\
+                <div style="font-size: 6pt; padding-top: 30px;"> Parameters: ' + JSON.stringify(props.filters) + ', created: ' + (new Date()).toISOString() + '</div>',
+                phantom: {
+                    header: "Facharztpraxis für Allgemeinmedizin | Time Report " + data.userInfo[0].username,
+                    footer: "<p style='text-align: center;'>{#pageNum}/{#numPages}</p>",
+                    orientation: "landscape"
+                },
+                engine: 'jsrender',
+                recipe: 'chrome-pdf'
+                },
+                data: {
+                    "balance": reportData,
+                    "singleBookings": singleBookingsInRefMonth
+                }
+            }).then(function(out) {
+    
+                 // close connection to database;
+                db.con.end();
+            
+                out.stream.pipe(res);
+                //fs.writeFileSync('/home/uli/time/backend/report.pdf', out.content)    
+    
+            }).catch(function(e) {    
+                res.end(e.message);
+            });
+        }else{
+            try{
+                db.con.end();
+                res.status(200).send(reportData);
             }
-        }).then(function(out) {
-
-             // close connection to database;
-            db.con.end();
+            catch(err) {    
+                res.end(err);
+            };           
+        }
         
-            out.stream.pipe(res);
-            //fs.writeFileSync('/home/uli/time/backend/report.pdf', out.content)    
-
-        }).catch(function(e) {    
-            res.end(e.message);
-        });
     };
 
     try{
